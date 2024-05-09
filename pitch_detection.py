@@ -1,4 +1,3 @@
-
 import cv2
 import numpy as np
 
@@ -21,6 +20,7 @@ def line_intersection(line1, line2):
     y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / denom
 
     return x, y
+
 def isolate_pitch(image):
     # Convert the image to HSV color space
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -59,27 +59,68 @@ def isolate_pitch(image):
     return pitch
 
 # Load the image
-image = cv2.imread("30.jpg")
+image = cv2.imread("31.png")
 
 imgPitch = isolate_pitch(image)
+#cv2.imshow("image", imgPitch)
+#cv2.waitKey(0)
 resized = cv2.resize(imgPitch, (0,0), fx=0.5, fy=0.5)
 
-
+# Apply Gaussian blur
+imgGauss = cv2.GaussianBlur(imgPitch, (3, 3), 0)
+cv2.imshow('Image Gauss', imgGauss)
+cv2.waitKey(0)
 
 # Convert the image to grayscale
-gray = cv2.cvtColor(imgPitch, cv2.COLOR_BGR2GRAY)
+gray = cv2.cvtColor(imgGauss, cv2.COLOR_BGR2GRAY)
+cv2.imshow('Image gray', gray)
+cv2.waitKey(0)
 
-# Apply Gaussian blur
-blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+imgBil = cv2.bilateralFilter(gray, 5, 5, 100)
+#imgLapl = cv2.Laplacian(gray, cv2.CV_16S, ksize = 3)
+blurred = cv2.convertScaleAbs(imgBil)
+#blurred = cv2.bitwise_not(imgLapl)
+cv2.imshow('Image blurred', blurred)
+cv2.waitKey(0)
+
+#
+#blurred = cv2.fastNlMeansDenoising(gray, None, 10, 10, 7, 21)
+#ddepth = cv2.CV_8U
+#kernel_size = 3
+#blurred2 = cv2.Laplacian(blurred, ddepth, ksize = kernel_size)
 
 # Use Canny edge detection
-edges = cv2.Canny(blurred, 50, 150)
-#cv2.imshow('Image edges', edges)
-#cv2.waitKey(0)
+edges = cv2.Canny(blurred, 50, 150, L2gradient = True)
+cv2.imshow('Image edges', edges)
+cv2.waitKey(0)
 
 pitch2D = cv2.imread("pitch2D.png")
 resizedPitch = cv2.resize(pitch2D, (0,0), fx=0.5, fy=0.5)
 
+linesP = cv2.HoughLinesP(edges, 1, np.pi / 180, 150, None, 40, 10)
+
+list = [linesP[i][0].tolist() for i in range(0, len(linesP))]
+print(list)
+l = set()
+
+if linesP is not None:
+    for i in range(0, len(list)-1):
+        l1 = list[i]
+        for j in range(i+1, len(list)):
+            l2 = list[j]
+            if abs((l2[3]-l2[1])/(l2[2]-l2[1])) == abs((l1[3]-l1[1])/(l1[2]-l1[1])):
+                l.add(tuple(l2))
+        #cv2.line(image, (l1[0], l1[1]), (l1[2], l1[3]), (0,0,255), 3, cv2.LINE_AA)
+
+for line in l:
+    l3 = [t for t in line]
+    list.remove(l3)
+
+for i in range(0, len(list)):
+    l1 = list[i]
+    cv2.line(image, (l1[0], l1[1]), (l1[2], l1[3]), (0,0,255), 3, cv2.LINE_AA)
+#l = linesP[0][0]
+#cv2.circle(image, (l[0], l[1]), 10, (255, 255, 0), -1)
 
 src_points = [[375,195], [587,262], [952,332], [150,248], [315,290], [568,353], [895,435]]
 dst_points = [[962,9], [916,227], [916,383], [820,134], [820,242],[820,374],[820,482]]
@@ -89,7 +130,6 @@ h, status = cv2.findHomography(pts_src, pts_dst)
 print(h)
 
 p = [375, 195, 1]
-
 
 for x in src_points:
     x.append(1)
