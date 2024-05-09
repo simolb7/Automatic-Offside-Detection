@@ -1,5 +1,5 @@
-
 import cv2
+from matplotlib import pyplot as plt
 import numpy as np
 
 def isolate_pitch(image):
@@ -39,44 +39,24 @@ def isolate_pitch(image):
 
     return pitch
 
-# Load the image
 image = cv2.imread("/home/simolb/Desktop/Universita/AiLab/progetto/1_4k.png")
 
 imgPitch = isolate_pitch(image)
-#cv2.imshow('Pitch', imgPitch)
-#resized = cv2.resize(imgPitch, (0,0), fx=0.5, fy=0.5)
 
-# Convert the image to grayscale
 gray = cv2.cvtColor(imgPitch, cv2.COLOR_BGR2GRAY)
 
-# Apply Gaussian blur
-blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+canny = cv2.Canny(gray, 50, 150, L2gradient=True)
 
-# Use Canny edge detection
-edges = cv2.Canny(blurred, 50, 150)
-cv2.imshow('Image edges', edges)
-cv2.waitKey(0)
+# Rilevamento dei contorni o dei punti di interesse
+corners = cv2.goodFeaturesToTrack(canny, 8, 0.01, 10) # Esempio: Rilevamento degli angoli di Shi-Tomasi
 
-pitch2D = cv2.imread("/home/simolb/Desktop/Universita/AiLab/progetto/pitch2D.png")
-resizedPitch = cv2.resize(pitch2D, (0,0), fx=0.5, fy=0.5)
+# Selezione dei punti di riferimento
+corners = np.intp(corners)
+ 
+for i in corners:
+ x,y = i.ravel()
+ cv2.circle(imgPitch,(x,y),3,255,-1)
+ 
+plt.imshow(imgPitch)
+plt.show()
 
-
-src_points = [[375,195], [587,262], [952,332], [150,248], [315,290], [568,353], [895,435]]
-dst_points = [[962,9], [916,227], [916,383], [820,134], [820,242],[820,374],[820,482]]
-pts_src = np.array(src_points)
-pts_dst = np.array(dst_points)
-h, status = cv2.findHomography(pts_src, pts_dst) 
-#print(h)
-
-p = [375, 195, 1]
-
-
-for x in src_points:
-    x.append(1)
-    matZ = np.matmul(h,x)
-    #print(round(matZ[0]/matZ[2]), round(matZ[1]/matZ[2]))
-
-# Display the image
-cv2.imshow('Image', image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
