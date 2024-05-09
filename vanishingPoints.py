@@ -38,7 +38,7 @@ def get_vertical_lines(image , side):
                 BlueRedMask -= 10
 
     
-    
+
     linesFound = False
     
     if side == 'left':

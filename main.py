@@ -18,7 +18,7 @@ for fileName in tempFileNames:
     fileNames.append(base_path+str(fileName))
 '''
 #Output image paths
-vanishing_point_viz_base_path = base_path+'vp/'
+vanishing_point_viz_base_path = 'vp/'
 
 #pose_estimation_viz_base_path = base_path+'pe/'
 #team_classification_viz_base_path = base_path+'tc/'
