@@ -70,6 +70,11 @@ resized = cv2.resize(imgPitch, (0,0), fx=0.5, fy=0.5)
 imgGauss = cv2.GaussianBlur(imgPitch, (3, 3), 0)
 cv2.imshow('Image Gauss', imgGauss)
 cv2.waitKey(0)
+image = cv2.imread("/home/simolb/Desktop/Universita/AiLab/progetto/1_4k.png")
+
+imgPitch = isolate_pitch(image)
+#cv2.imshow('Pitch', imgPitch)
+#resized = cv2.resize(imgPitch, (0,0), fx=0.5, fy=0.5)
 
 # Convert the image to grayscale
 gray = cv2.cvtColor(imgGauss, cv2.COLOR_BGR2GRAY)
@@ -91,10 +96,11 @@ cv2.waitKey(0)
 
 # Use Canny edge detection
 edges = cv2.Canny(blurred, 50, 150, L2gradient = True)
+edges = cv2.Canny(blurred, 50, 150)
 cv2.imshow('Image edges', edges)
 cv2.waitKey(0)
 
-pitch2D = cv2.imread("pitch2D.png")
+pitch2D = cv2.imread("/home/simolb/Desktop/Universita/AiLab/progetto/pitch2D.png")
 resizedPitch = cv2.resize(pitch2D, (0,0), fx=0.5, fy=0.5)
 
 linesP = cv2.HoughLinesP(edges, 1, np.pi / 180, 150, None, 40, 10)
@@ -127,14 +133,14 @@ dst_points = [[962,9], [916,227], [916,383], [820,134], [820,242],[820,374],[820
 pts_src = np.array(src_points)
 pts_dst = np.array(dst_points)
 h, status = cv2.findHomography(pts_src, pts_dst) 
-print(h)
+#print(h)
 
 p = [375, 195, 1]
 
 for x in src_points:
     x.append(1)
     matZ = np.matmul(h,x)
-    print(round(matZ[0]/matZ[2]), round(matZ[1]/matZ[2]))
+    #print(round(matZ[0]/matZ[2]), round(matZ[1]/matZ[2]))
 
 # Display the image
 cv2.imshow('Image', image)
