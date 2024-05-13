@@ -12,9 +12,6 @@ def get_vertical_lines(image , side):
     linesFound = False
     BlueRedMask = 100
     
-    
-    
-    
     while linesFound == False:
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, (35, BlueRedMask, BlueRedMask), (70, 255,255))

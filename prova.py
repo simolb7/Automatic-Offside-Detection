@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+'''
 def isolate_pitch(image):
     # Convert the image to HSV color space
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -68,19 +68,20 @@ for y in range(0, h - n, n):
 
 cv2.imshow('Image', imgPitch)
 cv2.waitKey(0)
+'''
 from vanishingPoints import *
 
-
-
 vanishing_point_viz_base_path = 'vp/'
-goalDirection = 'right'
-nomeFile = '479.jpg'
+goalDirection = 'left'
+nomeFile = '34.png'
 
 imageForVanishingPoints = cv2.imread(nomeFile)
+#imageForVanishingPoints = cv2.flip(imageForVanishingPoints, 1)
 print(imageForVanishingPoints.shape[:2])
 vertical_vanishing_point = get_vertical_vanishing_point(imageForVanishingPoints, goalDirection)
 horizontal_vanishing_point = get_horizontal_vanishing_point(imageForVanishingPoints)
 cv2.line(imageForVanishingPoints, (int(vertical_vanishing_point[0]) , int(vertical_vanishing_point[1])) , (int(1450),int(710)), (0,255,0) , 2) 
+print((int(vertical_vanishing_point[0]) , int(vertical_vanishing_point[1])))
 cv2.imwrite(vanishing_point_viz_base_path+nomeFile, imageForVanishingPoints)
 
 def calculate_x_coordinate(van, point, targetx):
