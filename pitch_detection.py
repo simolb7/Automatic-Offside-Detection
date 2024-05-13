@@ -1,4 +1,3 @@
-
 import cv2
 import numpy as np
 
@@ -40,7 +39,7 @@ def isolate_pitch(image):
     return pitch
 
 # Load the image
-image = cv2.imread("/home/simolb/Desktop/Universita/AiLab/progetto/1_4k.png")
+image = cv2.imread("/home/simolb/Documents/GitHub/Automatic-Offside-Detection/30.jpg")
 
 imgPitch = isolate_pitch(image)
 #cv2.imshow('Pitch', imgPitch)
@@ -57,7 +56,9 @@ edges = cv2.Canny(blurred, 50, 150)
 cv2.imshow('Image edges', edges)
 cv2.waitKey(0)
 
-pitch2D = cv2.imread("/home/simolb/Desktop/Universita/AiLab/progetto/pitch2D.png")
+pitch2D = cv2.imread("/home/simolb/Desktop/Universita/AiLab/progetto/world_cup_template.png")
+cv2.imshow(pitch2D)
+cv2.waitKey(0)
 resizedPitch = cv2.resize(pitch2D, (0,0), fx=0.5, fy=0.5)
 
 
@@ -66,15 +67,18 @@ dst_points = [[962,9], [916,227], [916,383], [820,134], [820,242],[820,374],[820
 pts_src = np.array(src_points)
 pts_dst = np.array(dst_points)
 h, status = cv2.findHomography(pts_src, pts_dst) 
-#print(h)
+print(h)
 
 p = [375, 195, 1]
 
+h = [[ 0.3409,  0.0644,  0.4066],
+         [ 0.2507,  1.7835, -0.1349],
+         [ 0.1683,  1.9608,  1.0000]]
 
 for x in src_points:
     x.append(1)
     matZ = np.matmul(h,x)
-    #print(round(matZ[0]/matZ[2]), round(matZ[1]/matZ[2]))
+    print(round(matZ[0]/matZ[2]), round(matZ[1]/matZ[2]))
 
 # Display the image
 cv2.imshow('Image', image)

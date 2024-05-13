@@ -45,7 +45,6 @@ root.title("Automatic Offside Recognition")
 root.geometry("1280x720")
 
 icon_path = os.path.join("src", "icons", "logo.ico")
-
 root.iconbitmap(icon_path)
 
 canvas = tk.Canvas(root, width=1280, height=720, highlightthickness=0)
