@@ -21,3 +21,5 @@ cv2.line(imageForVanishingPoints, (int(vertical_vanishing_point[0]) , int(vertic
 print(int(vertical_vanishing_point[0]) , int(vertical_vanishing_point[1]))
 cv2.imwrite(vanishing_point_viz_base_path+nomeFile, imageForVanishingPoints)
 '''
+
+print('ciao')
