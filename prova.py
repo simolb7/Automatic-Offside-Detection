@@ -82,22 +82,21 @@ vertical_vanishing_point = get_vertical_vanishing_point(imageForVanishingPoints,
 horizontal_vanishing_point = get_horizontal_vanishing_point(imageForVanishingPoints)
 cv2.line(imageForVanishingPoints, (int(vertical_vanishing_point[0]) , int(vertical_vanishing_point[1])) , (int(1450),int(710)), (0,255,0) , 2) 
 print((int(vertical_vanishing_point[0]) , int(vertical_vanishing_point[1])))
+goalDirection = 'right'
+nomeFile = '82.jpg'
+
+imageForVanishingPoints = cv2.imread(nomeFile)
+imageres = cv2.resize(imageForVanishingPoints, (1280, 720))
+cv2.imshow('image', imageres)
+cv2.imwrite('s.jpg', imageres)
+cv2.waitKey(0)
+
+'''
+vertical_vanishing_point = get_vertical_vanishing_point(imageForVanishingPoints, goalDirection)
+horizontal_vanishing_point = get_horizontal_vanishing_point(imageForVanishingPoints)
+cv2.line(imageForVanishingPoints, (int(vertical_vanishing_point[0]) , int(vertical_vanishing_point[1])) , (int(1450),int(710)), (0,255,0) , 2) 
+print(int(vertical_vanishing_point[0]) , int(vertical_vanishing_point[1]))
 cv2.imwrite(vanishing_point_viz_base_path+nomeFile, imageForVanishingPoints)
-
-def calculate_x_coordinate(van, point, targetx):
-    # Coordonate del punto di convergenza (punto di fuga)
-    x1,y1 = van[:2]
-    x2,y2 = point[:2]
-    return round(((-x1/(x2-x1))*(y2-y1))+y1)
-
-# Example usage:
-y_coordinate = calculate_x_coordinate((vertical_vanishing_point[0], vertical_vanishing_point[1]), (1450, 710), 0)
-print(y_coordinate)
-cv2.line(imageForVanishingPoints, (1450,710) , (0, y_coordinate), (0,255,255) , 2)
-cv2.imwrite(vanishing_point_viz_base_path+nomeFile, imageForVanishingPoints)
-
-
-
 '''
 def rectify_vertical_lines(image, vertical_lines):
     # Estrai i punti delle linee verticali
