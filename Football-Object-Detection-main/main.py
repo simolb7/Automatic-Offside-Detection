@@ -115,7 +115,7 @@ def get_kits_classifier(kits_colors):
           2 teams according to their color..
   """
   kits_kmeans = KMeans(n_clusters=2)
-  kits_kmeans.fit(kits_colors);
+  kits_kmeans.fit(kits_colors)
   return kits_kmeans
 
 def classify_kits(kits_classifer, kits_colors):
