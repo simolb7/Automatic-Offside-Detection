@@ -261,6 +261,6 @@ if __name__ == "__main__":
     }
     pathWeights = 'Football-Object-Detection-main/weights/best.pt'
     model = YOLO(pathWeights)
-    pathFrame = 'Football-Object-Detection-main/frame/97.jpg'
+    pathFrame = 'Football-Object-Detection-main/frame/12.jpg'
     img = cv2.imread(pathFrame)
     annotate_frame(img, model)
