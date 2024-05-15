@@ -57,91 +57,92 @@ def convertPoint2Dto3D(homography: torch.Tensor, p: list, w: int, h: int) -> lis
     return [x_warped, y_warped]
 
 
-image = cv2.imread("363.jpg")
-pitch2D = cv2.imread("model/sportsfield_release/data/world_cup_template.png")
-side = 'left'
+def drawOffside(pathImage, homography=0, side=0, defender=0, attacker=0):
+    '''TODO: documentazione
+        VEDERE LATO DEL PORTIERE PER STABILIRE DOVE ATTACCANO'''
+    image = cv2.imread(pathImage)
+    pitch2D = cv2.imread("model/sportsfield_release/data/world_cup_template.png")
+    side = 'left'
 
-optim_homography = torch.tensor([[[ 0.2940,  0.0238, -0.3597],
-         [-0.2042,  1.1472,  0.1179],
-         [ 0.0560,  0.9439,  1.0000]]])
+    homography = torch.tensor([[[ 0.2940,  0.0238, -0.3597],
+            [-0.2042,  1.1472,  0.1179],
+            [ 0.0560,  0.9439,  1.0000]]])
 
-defender = [[1089, 745], [1195, 704], [1496, 579], [892, 881]]
-attacker = [[833, 785], [1216, 719]]
+    defender = [[1089, 745], [1195, 704], [1496, 579], [892, 881]]
+    attacker = [[833, 785], [1216, 719]]
 
-#frame_point = np.array([345, 484])
+    w = len(image[0])
+    h = len(image)
+    playerOffside = 0
 
-w = len(image[0])
-h = len(image)
-playerOffside = 0
+    if side == 'right':
+        d = []
+        a = []
+        offside = []
+        inside = []
+        for p in defender:
+            d_converted = convertPoint3Dto2D(homography, p, w, h)
+            d.append(d_converted)
+            image = cv2.circle(image, p, 0, (0, 0, 255), 10)
+            pitch2D = cv2.circle(pitch2D, (int(d_converted[0]), int(d_converted[1])), 0, (0, 0, 255), 10)
+        offside2D = max(d)
+        p1_2D = [offside2D[0], 0]
+        p2_2D = [offside2D[0], 680]
+        pitch2D = cv2.line(pitch2D, (int(p1_2D[0]), int(p1_2D[1])), (int(p2_2D[0]), int(p2_2D[1])), (0, 255, 255), 1)
+        inver_homography = torch.inverse(homography)
+        p1_3D = convertPoint2Dto3D(inver_homography, p1_2D, w, h)
+        p2_3D = convertPoint2Dto3D(inver_homography, p2_2D, w, h)
+        image = cv2.line(image, (int(p1_3D[0]), int(p1_3D[1])), (int(p2_3D[0]), int(p2_3D[1])), (0, 255, 255), 3)
 
-if side == 'right':
-    d = []
-    a = []
-    offside = []
-    inside = []
-    for p in defender:
-        d_converted = convertPoint3Dto2D(optim_homography, p, w, h)
-        d.append(d_converted)
-        image = cv2.circle(image, p, 0, (0, 0, 255), 10)
-        pitch2D = cv2.circle(pitch2D, (int(d_converted[0]), int(d_converted[1])), 0, (0, 0, 255), 10)
-    offside2D = max(d)
-    p1_2D = [offside2D[0], 0]
-    p2_2D = [offside2D[0], 680]
-    pitch2D = cv2.line(pitch2D, (int(p1_2D[0]), int(p1_2D[1])), (int(p2_2D[0]), int(p2_2D[1])), (0, 255, 255), 1)
-    inver_homography = torch.inverse(optim_homography)
-    p1_3D = convertPoint2Dto3D(inver_homography, p1_2D, w, h)
-    p2_3D = convertPoint2Dto3D(inver_homography, p2_2D, w, h)
-    image = cv2.line(image, (int(p1_3D[0]), int(p1_3D[1])), (int(p2_3D[0]), int(p2_3D[1])), (0, 255, 255), 3)
+        for p in attacker:
+            a_converted = convertPoint3Dto2D(homography, p, w, h)
+            a.append(a_converted)
+            image = cv2.circle(image, p, 0, (255, 0, 0), 10)
+            pitch2D = cv2.circle(pitch2D, (int(a_converted[0]), int(a_converted[1])), 0, (255, 0, 0), 10)
+        for p in a:
+            if p[0] > offside2D[0]:
+                offside.append(p)
+                pitch2D = cv2.circle(pitch2D, (int(p[0]), int(p[1])), 0, (0,0,0), 5)
+            else:
+                inside.append(p)
 
-    for p in attacker:
-        a_converted = convertPoint3Dto2D(optim_homography, p, w, h)
-        a.append(a_converted)
-        image = cv2.circle(image, p, 0, (255, 0, 0), 10)
-        pitch2D = cv2.circle(pitch2D, (int(a_converted[0]), int(a_converted[1])), 0, (255, 0, 0), 10)
-    for p in a:
-        if p[0] > offside2D[0]:
-            offside.append(p)
-            pitch2D = cv2.circle(pitch2D, (int(p[0]), int(p[1])), 0, (0,0,0), 5)
-        else:
-            inside.append(p)
+    elif side == 'left':
+        d = []
+        a = []
+        offside = []
+        inside = []
+        for p in defender:
+            d_converted = convertPoint3Dto2D(homography, p, w, h)
+            d.append(d_converted)
+            image = cv2.circle(image, p, 0, (0, 0, 255), 10)
+            pitch2D = cv2.circle(pitch2D, (int(d_converted[0]), int(d_converted[1])), 0, (0, 0, 255), 10)
+        offside2D = min(d)
+        p1_2D = [offside2D[0], 0]
+        p2_2D = [offside2D[0], 680]
+        pitch2D = cv2.line(pitch2D, (int(p1_2D[0]), int(p1_2D[1])), (int(p2_2D[0]), int(p2_2D[1])), (0, 255, 255), 1)
+        inver_homography = torch.inverse(homography)
+        p1_3D = convertPoint2Dto3D(inver_homography, p1_2D, w, h)
+        p2_3D = convertPoint2Dto3D(inver_homography, p2_2D, w, h)
+        image = cv2.line(image, (int(p1_3D[0]), int(p1_3D[1])), (int(p2_3D[0]), int(p2_3D[1])), (0, 255, 255), 3)
 
-elif side == 'left':
-    d = []
-    a = []
-    offside = []
-    inside = []
-    for p in defender:
-        d_converted = convertPoint3Dto2D(optim_homography, p, w, h)
-        d.append(d_converted)
-        image = cv2.circle(image, p, 0, (0, 0, 255), 10)
-        pitch2D = cv2.circle(pitch2D, (int(d_converted[0]), int(d_converted[1])), 0, (0, 0, 255), 10)
-    offside2D = min(d)
-    p1_2D = [offside2D[0], 0]
-    p2_2D = [offside2D[0], 680]
-    pitch2D = cv2.line(pitch2D, (int(p1_2D[0]), int(p1_2D[1])), (int(p2_2D[0]), int(p2_2D[1])), (0, 255, 255), 1)
-    inver_homography = torch.inverse(optim_homography)
-    p1_3D = convertPoint2Dto3D(inver_homography, p1_2D, w, h)
-    p2_3D = convertPoint2Dto3D(inver_homography, p2_2D, w, h)
-    image = cv2.line(image, (int(p1_3D[0]), int(p1_3D[1])), (int(p2_3D[0]), int(p2_3D[1])), (0, 255, 255), 3)
+        for p in attacker:
+            a_converted = convertPoint3Dto2D(homography, p, w, h)
+            a.append(a_converted)
+            image = cv2.circle(image, p, 0, (255, 0, 0), 10)
+            pitch2D = cv2.circle(pitch2D, (int(a_converted[0]), int(a_converted[1])), 0, (255, 0, 0), 10)
+        for p in a:
+            if p[0] < offside2D[0]:
+                offside.append(p)
+                pitch2D = cv2.circle(pitch2D, (int(p[0]), int(p[1])), 0, (0,0,0), 5)
+            else:
+                inside.append(p)
 
-    for p in attacker:
-        a_converted = convertPoint3Dto2D(optim_homography, p, w, h)
-        a.append(a_converted)
-        image = cv2.circle(image, p, 0, (255, 0, 0), 10)
-        pitch2D = cv2.circle(pitch2D, (int(a_converted[0]), int(a_converted[1])), 0, (255, 0, 0), 10)
-    for p in a:
-        if p[0] < offside2D[0]:
-            offside.append(p)
-            pitch2D = cv2.circle(pitch2D, (int(p[0]), int(p[1])), 0, (0,0,0), 5)
-        else:
-            inside.append(p)
 
-#print(offside)
-#print(inside)
+    playerOffside = len(offside)
 
-playerOffside = len(offside)
-
-os.chdir("result")
-cv2.imwrite("3D_offside.jpg", image)
-cv2.imwrite("2D_offside.png", pitch2D)
-
+    os.chdir('result')
+    cv2.imwrite('result3D.jpg', image)
+    cv2.imwrite('result2D.png', pitch2D)
+    os.chdir('..')
+    
+    return playerOffside

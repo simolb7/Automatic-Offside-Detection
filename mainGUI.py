@@ -1,9 +1,11 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import PhotoImage, filedialog
 from PIL import ImageTk, Image
 from tkinter import Canvas, Label
 import os
 from PIL import Image, ImageTk, ImageEnhance
+
+from offside import drawOffside
 
 def reduce_brightness(image):
     enhancer = ImageEnhance.Brightness(image)
@@ -21,14 +23,19 @@ def visualizza_immagine(file_path, team):
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)  
 
-    img = Image.open(file_path)
+    
+    playerOffside = drawOffside(file_path)
+    print(playerOffside)
+    
+    img = Image.open('result/result3D.jpg')
+
     #insierire l'immagine 3D processata con giocatori individuati e fuorigioco
     img = img.resize((753, 424))
     img = ImageTk.PhotoImage(img)
     canvas.img = img
     canvas.create_image(0, 159, anchor=tk.NW, image=img)
     
-    img2 = Image.open("Automatic Offside Recognition GUI 2.0\src\offside\pitch2D.png")
+    img2 = Image.open('result/result2D.png')
     #inserire il campo 2D una volta aggiunti giocatori e fuorigioco
     img2 = img2.resize((512, 300))
     img2 = ImageTk.PhotoImage(img2)
@@ -49,17 +56,16 @@ def visualizza_immagine(file_path, team):
     
     # Aggiunta della label per indicare il valore di team
     
-
 def start_view():
     # Carica e ridimensiona l'immagine di sfondo
-    background = Image.open('Automatic Offside Recognition GUI 2.0\src\images\start.jpg')
+    background = Image.open('Automatic Offside Recognition GUI 2.0/src/images/start.jpg')
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)
 
     # Carica e ridimensiona l'immagine del pulsante start
-    start_button_image = Image.open('Automatic Offside Recognition GUI 2.0\src\elements\start_button.png')
+    start_button_image = Image.open('Automatic Offside Recognition GUI 2.0/src/elements/start_button.png')
     start_button_image = start_button_image.resize((200, 50))
     start_button_photo = ImageTk.PhotoImage(start_button_image)
     canvas.start_button = start_button_photo
@@ -86,7 +92,7 @@ def impostazioni_preprocessamento(file_path):
     global team
     team = "scroto"  # Valore iniziale del team
 
-    background = Image.open("Automatic Offside Recognition GUI 2.0\src\images\preprocess.jpg")
+    background = Image.open("Automatic Offside Recognition GUI 2.0/src/images/preprocess.jpg")
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
@@ -136,7 +142,8 @@ root = tk.Tk()
 root.title("Automatic Offside Recognition")
 root.geometry("1280x720")
 
-icon_path = 'Automatic Offside Recognition GUI 2.0\src\icons\logo.ico'
+icon_path = 'Automatic Offside Recognition GUI 2.0/src/icons/logo.ico'
+#os.path.join("src", "icons", "logo.ico")
 im = Image.open(icon_path)
 photo = ImageTk.PhotoImage(im)
 root.wm_iconphoto(True, photo)
