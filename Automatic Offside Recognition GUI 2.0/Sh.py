@@ -137,9 +137,9 @@ root.title("Automatic Offside Recognition")
 root.geometry("1280x720")
 
 icon_path = 'Automatic Offside Recognition GUI 2.0\src\icons\logo.ico'
-#os.path.join("src", "icons", "logo.ico")
-
-root.iconbitmap(icon_path)
+im = Image.open(icon_path)
+photo = ImageTk.PhotoImage(im)
+root.wm_iconphoto(True, photo)
 
 canvas = tk.Canvas(root, width=1280, height=720, highlightthickness=0)
 canvas.pack()
