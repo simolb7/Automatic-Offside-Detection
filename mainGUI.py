@@ -4,6 +4,8 @@ from PIL import ImageTk, Image
 from tkinter import Canvas, Label
 import os
 from PIL import Image, ImageTk, ImageEnhance
+from offside import drawOffside
+
 
 def reduce_brightness(image, factor=0.7):
     enhancer = ImageEnhance.Brightness(image)
@@ -16,19 +18,22 @@ def seleziona_immagine():
         impostazioni_preprocessamento(file_path)
 
 def visualizza_immagine(file_path, team):
+
     background = Image.open("Automatic Offside Recognition GUI 2.0/src/images/result.jpg")
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)  
 
-    img = Image.open(file_path)
+    playersOffside = drawOffside(file_path)
+
+    img = Image.open('result/result3D.jpg')
     img = img.resize((753, 424))
     img = ImageTk.PhotoImage(img)
     canvas.img = img
     canvas.create_image(0, 159, anchor=tk.NW, image=img)
     
-    img2 = Image.open("Automatic Offside Recognition GUI 2.0/src/offside/pitch2D.png")
+    img2 = Image.open("result/result2D.png")
     img2 = img2.resize((512, 300))
     img2 = ImageTk.PhotoImage(img2)
     canvas.img2 = img2
@@ -181,8 +186,6 @@ icon_path = 'Automatic Offside Recognition GUI 2.0/src/icons/logo.ico'
 im = Image.open(icon_path)
 photo = ImageTk.PhotoImage(im)
 root.wm_iconphoto(True, photo)
-
-#root.iconbitmap(icon_path)
 
 canvas = tk.Canvas(root, width=1280, height=720, highlightthickness=0)
 canvas.pack()
