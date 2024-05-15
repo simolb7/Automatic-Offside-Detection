@@ -12,7 +12,8 @@ def convertPoint3Dto2D(homography: torch.Tensor, p: list, w: int, h: int) -> lis
     - Il tensore di omografia;
     - Il punto da convertire;
     - La larghezza dell'immagine del punto da convertire;
-    - L'altezza dell'immagine del punto da convertire.
+    - L'altezza dell'immagine del punto da convertire.\n
+    La funzione ritorna in output la x e la y della posizione warpata.
     '''
     x = torch.tensor(p[0] / w - 0.5).float()
     y = torch.tensor(p[1] / h - 0.5).float()
@@ -38,7 +39,8 @@ def convertPoint2Dto3D(homography: torch.Tensor, p: list, w: int, h: int) -> lis
     - Il tensore di omografia invertita;
     - Il punto da convertire;
     - La larghezza dell'immagine su cui convertire il punto;
-    - L'altezza dell'immagine su cui convertire il punto.
+    - L'altezza dell'immagine su cui convertire il punto.\n
+    La funzione ritorna in output la x e la y della posizione warpata.
     '''
     x = torch.tensor(p[0] / 1050 - 0.5).float()
     y = torch.tensor(p[1] / 680 - 0.5).float()
@@ -57,9 +59,15 @@ def convertPoint2Dto3D(homography: torch.Tensor, p: list, w: int, h: int) -> lis
     return [x_warped, y_warped]
 
 
-def drawOffside(pathImage, homography=0, side=0, defender=0, attacker=0):
-    '''TODO: documentazione
-        VEDERE LATO DEL PORTIERE PER STABILIRE DOVE ATTACCANO'''
+def drawOffside(pathImage: str, homography:torch.Tensor = 0, side: str = 0, defender:list[list[int]] = 0, attacker: list[list[int]]=0) -> int:
+    '''Funzione che calcola e disegna sull'immagine 2D e 3D il fuorigioco e le posizioni dei giocatori.
+    La funzione prende in input:
+    - Il path dell'immagine 3D;
+    - Il tensore di omografia;
+    - Il lato del campo come 'left' o 'right';
+    - La lista delle posizioni dei difensori nell'immagine 3D;
+    - La lista delle posizioni degli attaccanti nell'immagine 3D.\n
+    La funzione ritorna in output il numero di attaccanti in fuorigioco e salva nella cartella result le immagini lavorate.'''
     image = cv2.imread(pathImage)
     pitch2D = cv2.imread("model/sportsfield_release/data/world_cup_template.png")
     side = 'left'
@@ -71,15 +79,18 @@ def drawOffside(pathImage, homography=0, side=0, defender=0, attacker=0):
     defender = [[1089, 745], [1195, 704], [1496, 579], [892, 881]]
     attacker = [[833, 785], [1216, 719]]
 
+    '''Calcola altezza e larghezza della foto'''
     w = len(image[0])
     h = len(image)
-    playerOffside = 0
-
     if side == 'right':
         d = []
         a = []
         offside = []
         inside = []
+        '''Conversione dei punti dei difensori sull'immagine 2D per agevolare la ricerca dell'ultimo difensore, che viene fatta attraverso max()
+        nel caso in cui si attacchi a destra.
+        Una volta trovato viene usata la cordinata x della sua posizione per tracciare la linea sull'immagine 2D e usando la matrice di omografia inversa
+        vengono trovati i corrispettivi punti sull'immagine 3D e disegnata la linea.'''
         for p in defender:
             d_converted = convertPoint3Dto2D(homography, p, w, h)
             d.append(d_converted)
@@ -93,7 +104,8 @@ def drawOffside(pathImage, homography=0, side=0, defender=0, attacker=0):
         p1_3D = convertPoint2Dto3D(inver_homography, p1_2D, w, h)
         p2_3D = convertPoint2Dto3D(inver_homography, p2_2D, w, h)
         image = cv2.line(image, (int(p1_3D[0]), int(p1_3D[1])), (int(p2_3D[0]), int(p2_3D[1])), (0, 255, 255), 3)
-
+        '''Conversione dei punti dei difensori sull'immagine 2D per agevolare la ricerca degli attaccanti in fuorigioco. Per l'attacco a destra sono tutti
+        quelli la cui coordinata x è maggiore della coordinata x dell'ultimo difensore. Vengono quindi disegnati sull'immagine 2D gli attaccanti.'''
         for p in attacker:
             a_converted = convertPoint3Dto2D(homography, p, w, h)
             a.append(a_converted)
@@ -111,6 +123,10 @@ def drawOffside(pathImage, homography=0, side=0, defender=0, attacker=0):
         a = []
         offside = []
         inside = []
+        '''Conversione dei punti dei difensori sull 'immagine 2D per agevolare la ricerca dell'ultimo difensore, che viene fatta attraverso min()
+        nel caso in cui si attacchi a sinistra.
+        Una volta trovato viene usata la cordinata x della sua posizione per tracciare la linea sull'immagine 2D e usando la matrice di omografia inversa
+        vengono trovati i corrispettivi punti sull'immagine 3D e disegnata la linea.'''
         for p in defender:
             d_converted = convertPoint3Dto2D(homography, p, w, h)
             d.append(d_converted)
@@ -124,7 +140,8 @@ def drawOffside(pathImage, homography=0, side=0, defender=0, attacker=0):
         p1_3D = convertPoint2Dto3D(inver_homography, p1_2D, w, h)
         p2_3D = convertPoint2Dto3D(inver_homography, p2_2D, w, h)
         image = cv2.line(image, (int(p1_3D[0]), int(p1_3D[1])), (int(p2_3D[0]), int(p2_3D[1])), (0, 255, 255), 3)
-
+        '''Conversione dei punti dei difensori sull'immagine 2D per agevolare la ricerca degli attaccanti in fuorigioco. Per l'attacco a sinistra sono tutti
+        quelli la cui coordinata x è minore della coordinata x dell'ultimo difensore. Vengono quindi disegnati sull'immagine 2D gli attaccanti.'''
         for p in attacker:
             a_converted = convertPoint3Dto2D(homography, p, w, h)
             a.append(a_converted)
@@ -137,7 +154,7 @@ def drawOffside(pathImage, homography=0, side=0, defender=0, attacker=0):
             else:
                 inside.append(p)
 
-
+    '''Viene calcolato il numero degli attaccanti in fuorigioco e salvate le immagini lavorate nella cartella result.'''
     playerOffside = len(offside)
 
     os.chdir('result')
