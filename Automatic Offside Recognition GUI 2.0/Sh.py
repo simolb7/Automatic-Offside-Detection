@@ -22,12 +22,14 @@ def visualizza_immagine(file_path, team):
     canvas.create_image(0, 0, anchor=tk.NW, image=background)  
 
     img = Image.open(file_path)
+    #insierire l'immagine 3D processata con giocatori individuati e fuorigioco
     img = img.resize((753, 424))
     img = ImageTk.PhotoImage(img)
     canvas.img = img
     canvas.create_image(0, 159, anchor=tk.NW, image=img)
     
     img2 = Image.open("Automatic Offside Recognition GUI 2.0\src\offside\pitch2D.png")
+    #inserire il campo 2D una volta aggiunti giocatori e fuorigioco
     img2 = img2.resize((512, 300))
     img2 = ImageTk.PhotoImage(img2)
     canvas.img2 = img2

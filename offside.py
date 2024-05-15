@@ -72,6 +72,7 @@ attacker = [[833, 785], [1216, 719]]
 
 w = len(image[0])
 h = len(image)
+playerOffside = 0
 
 if side == 'right':
     d = []
@@ -137,6 +138,8 @@ elif side == 'left':
 
 #print(offside)
 #print(inside)
+
+playerOffside = len(offside)
 
 os.chdir("result")
 cv2.imwrite("3D_offside.jpg", image)
