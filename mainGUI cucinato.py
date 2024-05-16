@@ -10,14 +10,13 @@ def reduce_brightness(image, factor=0.7):
     enhancer = ImageEnhance.Brightness(image)
     return enhancer.enhance(factor)
 
-
 def seleziona_immagine():
     file_path = filedialog.askopenfilename()
     if file_path:
         impostazioni_preprocessamento(file_path)
 
 def visualizza_immagine(file_path, team):
-    background = Image.open("Automatic Offside Recognition GUI/src/images/result.jpg")
+    background = Image.open("GUI/src/images/result.jpg")
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
@@ -29,13 +28,13 @@ def visualizza_immagine(file_path, team):
     canvas.img = img
     canvas.create_image(0, 159, anchor=tk.NW, image=img)
     
-    img2 = Image.open("Automatic Offside Recognition GUI/src/offside/pitch2D.png")
+    img2 = Image.open("GUI/src/offside/pitch2D.png")
     img2 = img2.resize((512, 300))
     img2 = ImageTk.PhotoImage(img2)
     canvas.img2 = img2
     canvas.create_image(769, 159, anchor=tk.NW, image=img2)
 
-    restart_button_img = Image.open("Automatic Offside Recognition GUI/src/elements/restart_button.png")
+    restart_button_img = Image.open("GUI/src/elements/restart_button.png")
     restart_button_img_resized = restart_button_img.resize((200, 50))
     restart_button_photo = ImageTk.PhotoImage(restart_button_img_resized)
     canvas.restart_button = restart_button_photo
@@ -80,10 +79,10 @@ def schermata_di_caricamento_loop(file_path, team):
 
     # Lista delle immagini di caricamento
     images = [
-        Image.open("Automatic Offside Recognition GUI\src\images\image1.jpg"),
-        Image.open("Automatic Offside Recognition GUI\src\images\image2.jpg"),
-        Image.open("Automatic Offside Recognition GUI\src\images\image3.jpg"),
-        Image.open("Automatic Offside Recognition GUI\src\images\image4.jpg")
+        Image.open("GUI\src\images\image1.jpg"),
+        Image.open("GUI\src\images\image2.jpg"),
+        Image.open("GUI\src\images\image3.jpg"),
+        Image.open("GUI\src\images\image4.jpg")
     ]
     
     # Funzione per mostrare le immagini a intervalli
@@ -117,13 +116,13 @@ def start_view():
                 widget.destroy()
 
 
-    background = Image.open('Automatic Offside Recognition GUI/src/images/start.jpg')
+    background = Image.open('GUI/src/images/start.jpg')
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)
 
-    start_button_image = Image.open('Automatic Offside Recognition GUI/src/elements/start_button.png')
+    start_button_image = Image.open('GUI/src/elements/start_button.png')
     start_button_image_resized = start_button_image.resize((200, 50))
     start_button_photo = ImageTk.PhotoImage(start_button_image_resized)
     canvas.start_button = start_button_photo
@@ -148,7 +147,7 @@ def impostazioni_preprocessamento(file_path):
     global team
     team = ""  # Valore iniziale del team
 
-    background = Image.open("Automatic Offside Recognition GUI/src/images/preprocess.jpg")
+    background = Image.open("GUI/src/images/preprocess.jpg")
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
@@ -161,21 +160,21 @@ def impostazioni_preprocessamento(file_path):
     canvas.img = img
     canvas.create_image(640-(imgX//2), 62, anchor=tk.NW, image=img)
     
-    teamA_button_img = Image.open("Automatic Offside Recognition GUI/src/elements/teamA_button.png")
+    teamA_button_img = Image.open("GUI/src/elements/teamA_button.png")
     teamA_button_img_resized = teamA_button_img.resize((160, 40))
     teamA_button_img_dark = reduce_brightness(teamA_button_img_resized, 0.5)
     teamA_button_photo = ImageTk.PhotoImage(teamA_button_img_dark)
     canvas.teamA_button_photo = teamA_button_photo
     canvas.teamA_button_img_resized = teamA_button_img_resized
     
-    teamB_button_img = Image.open("Automatic Offside Recognition GUI/src/elements/teamB_button.png")
+    teamB_button_img = Image.open("GUI/src/elements/teamB_button.png")
     teamB_button_img_resized = teamB_button_img.resize((160, 40))
     teamB_button_img_dark = reduce_brightness(teamB_button_img_resized, 0.5)
     teamB_button_photo = ImageTk.PhotoImage(teamB_button_img_dark)
     canvas.teamB_button_photo = teamB_button_photo
     canvas.teamB_button_img_resized = teamB_button_img_resized
     
-    process_button_img = Image.open("Automatic Offside Recognition GUI/src/elements/process_button.png")
+    process_button_img = Image.open("GUI/src/elements/process_button.png")
     process_button_img_resized = process_button_img.resize((200, 50))
     process_button_photo = ImageTk.PhotoImage(process_button_img_resized)
     canvas.process_button_photo = process_button_photo
@@ -229,7 +228,7 @@ root.title("Automatic Offside Recognition")
 root.geometry("1280x720")
 root.resizable(False, False)
 
-icon_path = 'Automatic Offside Recognition GUI/src/icons/logo.ico'
+icon_path = 'GUI/src/icons/logo.ico'
 im = Image.open(icon_path)
 photo = ImageTk.PhotoImage(im)
 root.wm_iconphoto(True, photo)
