@@ -5,7 +5,7 @@ from tkinter import Canvas, Label
 import os
 from PIL import Image, ImageTk, ImageEnhance
 from offside import drawOffside
-
+from model.sportsfield_release.calculateHomography import calculateOptimHomography
 
 def reduce_brightness(image, factor=0.7):
     enhancer = ImageEnhance.Brightness(image)
@@ -25,7 +25,11 @@ def visualizza_immagine(file_path, team):
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)  
 
-    playersOffside = drawOffside(file_path)
+    #DA SPOSTARE NELLA SCHERMATA DI CARICAMENTO (FINO A DRAWOFFSIDE)
+
+    homography = calculateOptimHomography(file_path)
+
+    playersOffside = drawOffside(file_path, homography)
 
     img = Image.open('result/result3D.jpg')
     img = img.resize((753, 424))
