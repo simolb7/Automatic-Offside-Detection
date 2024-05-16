@@ -2,8 +2,7 @@ import cv2
 import torch
 import numpy as np
 import os
-#import matplotlib.pyplot as plt
-#import matplotlib.image as im
+
 
 
 def convertPoint3Dto2D(homography: torch.Tensor, p: list, w: int, h: int) -> list[float]:
@@ -59,29 +58,37 @@ def convertPoint2Dto3D(homography: torch.Tensor, p: list, w: int, h: int) -> lis
     return [x_warped, y_warped]
 
 
-def drawOffside(pathImage: str, homography:torch.Tensor = 0, side: str = 0, defender:list[list[int]] = 0, attacker: list[list[int]]=0) -> int:
+def drawOffside(pathImage: str, homography:torch.Tensor, defender:list[list[int]] = 0, attacker: list[list[int]]=0, goalkeeper: list[int]=0 ) -> int:
     '''Funzione che calcola e disegna sull'immagine 2D e 3D il fuorigioco e le posizioni dei giocatori.
     La funzione prende in input:
     - Il path dell'immagine 3D;
-    - Il tensore di omografia;
-    - Il lato del campo come 'left' o 'right';
+    - Il tensore di omografia;;
     - La lista delle posizioni dei difensori nell'immagine 3D;
-    - La lista delle posizioni degli attaccanti nell'immagine 3D.\n
+    - La lista delle posizioni degli attaccanti nell'immagine 3D;
+    - La posizione del portiere nell'immagine 3D.\n
     La funzione ritorna in output il numero di attaccanti in fuorigioco e salva nella cartella result le immagini lavorate.'''
     image = cv2.imread(pathImage)
     pitch2D = cv2.imread("model/sportsfield_release/data/world_cup_template.png")
-    side = 'left'
-
+    goalkeeper = [741, 549]
+    ''''
     homography = torch.tensor([[[ 0.2940,  0.0238, -0.3597],
             [-0.2042,  1.1472,  0.1179],
             [ 0.0560,  0.9439,  1.0000]]])
-
+    '''
     defender = [[1089, 745], [1195, 704], [1496, 579], [892, 881]]
     attacker = [[833, 785], [1216, 719]]
 
     '''Calcola altezza e larghezza della foto'''
     w = len(image[0])
     h = len(image)
+
+    '''Calcola la posizione del portiere e da questa deriviamo il lato dell'attacco (Nelle immagini delle azioni è presente sempre un solo portiere)'''
+    p_goalkeeper = convertPoint3Dto2D(homography, goalkeeper, w, h)
+    if p_goalkeeper[0] > 1050/2:
+        side = 'right'
+    else:
+        side = 'left'
+  
     if side == 'right':
         d = []
         a = []
