@@ -30,10 +30,16 @@ def visualizza_immagine(file_path, team, dictPlayers, colors):
     canvas.create_image(0, 0, anchor=tk.NW, image=background)
     
     homography = calculateOptimHomography(file_path)
-    if team != "A":
-        offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team A'], dictPlayers['Team B'], dictPlayers['goalkeeper'])
+    if 'goalkeeper' in dictPlayers.keys():
+        if team != "A":
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team A'], dictPlayers['Team B'], dictPlayers['goalkeeper'])
+        else:
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team B'], dictPlayers['Team A'], dictPlayers['goalkeeper'])
     else:
-        offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team B'], dictPlayers['Team A'], dictPlayers['goalkeeper'])
+        if team != "A":
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team A'], dictPlayers['Team B'])
+        else:
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team B'], dictPlayers['Team A'])
 
     img = Image.open('result/result3D.jpg')
     img = img.resize((753, 424))
@@ -72,11 +78,14 @@ def visualizza_immagine(file_path, team, dictPlayers, colors):
     canvas.tag_bind(restart_button, '<Enter>', on_enter_restart)
     canvas.tag_bind(restart_button, '<Leave>', on_leave_restart)
 
-    players_button_img = Image.open(f"GUI/src/images/{offside}.png")
+    if offside == 0:
+        players_button_img = Image.open(f"GUI/src/images/no_offside.png")
+    else:
+        players_button_img = Image.open(f"GUI/src/images/{offside}.png")
+
     players_button_photo = ImageTk.PhotoImage(players_button_img)
     canvas.players_button = players_button_photo
-    canvas.players_button_img = players_button_img
-    
+    canvas.players_button_img = players_button_img   
     canvas.create_image(1140, 530, image=players_button_photo)
 
     team_button_img = Image.open(f"GUI/src/images/{team}.png")
