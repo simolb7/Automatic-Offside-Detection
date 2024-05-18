@@ -1,3 +1,4 @@
+import os
 from ultralytics import YOLO
 import cv2
 import numpy as np
@@ -61,13 +62,10 @@ def predictTeamAttacking(players_classification, img):
             area = abs(area) / 2.0
             return area
 
-        cv2.imshow("Aree giocatori", img_empty)
-        cv2.waitKey(0)
+   
 
         area_points_team_1 = calculate_area(hull_points_team_1.squeeze())
         area_points_team_2 = calculate_area(hull_points_team_2.squeeze())
-        print(f"Area punti team 1: {area_points_team_1}")
-        print(f"Area punti team 2: {area_points_team_2}")
         return area_points_team_1, area_points_team_2
     
     def getPlayerCloserToGoalkeeper(coordinates_team_1, coordinates_team_2, coordinates_goalkeeper):
@@ -102,8 +100,7 @@ def predictTeamAttacking(players_classification, img):
                     counter_team_1 += 1
                 else:
                     counter_team_2 += 1
-            print(f"Numero di giocatori vicini al portiere team1: {counter_team_1}")
-            print(f"Numero di giocatori vicini al portiere team2: {counter_team_2}")
+
         return counter_team_1, counter_team_2, max_players_near_goalkeeper
     
     def getTeamCloserToBall(coordinates_team_1, coordinates_team_2, coordinates_ball):
@@ -128,7 +125,6 @@ def predictTeamAttacking(players_classification, img):
                 distances_ball.append((distance_2, 'team2'))
             
             team_closer_to_ball = sorted(distances_ball, key=lambda x: (x[0]))[0][1]
-            print(f"Squadra più vicina alla palla: {team_closer_to_ball}")
         return team_closer_to_ball  
     
     def getPercentages(area_points_team_1, area_points_team_2, n_players_team_1, n_players_team_2, max_players_near_goalkeeper, counter_team_1, counter_team_2, team_closer_to_ball):
@@ -196,7 +192,6 @@ def predictTeamAttacking(players_classification, img):
                 percent_1 = (score_team_1/total_score) * 100
                 percent_2 = (score_team_2/total_score) * 100
             case "b":
-                print("sono entrato nel case giusto")
                 players_closer_to_ball_team1 = 0
                 players_closer_to_ball_team2 = 0
                 if (team_closer_to_ball == 'team1'):
@@ -272,8 +267,6 @@ def predictTeamAttacking(players_classification, img):
     """
     n_players_team_1 = len(players_classification[0])
     n_players_team_2 = len(players_classification[1])
-    print(f"Numero giocatori team 1: {n_players_team_1}")
-    print(f"Numero giocatori team 2: {n_players_team_2}")
     
     # ottieni la squadra più vicina alla palla
     team_closer_to_ball = getTeamCloserToBall(coordinates_team_1, coordinates_team_2, coordinates_ball)
@@ -282,8 +275,6 @@ def predictTeamAttacking(players_classification, img):
     #calcola le percentuali di attacco delle due squadre
     percent_team_1, percent_team_2 = getPercentages(area_points_team_1, area_points_team_2, n_players_team_1, n_players_team_2, max_players_near_goalkeeper, counter_team_1, counter_team_2, team_closer_to_ball)
 
-    print(f"Percentuale di probabilità che il team 1 stia attaccando: {percent_team_1:.2f}%")
-    print(f"Percentuale di probabilità che il team 2 stia attaccando: {percent_team_2:.2f}%")
     return percent_team_1, percent_team_2
 
 
@@ -292,7 +283,7 @@ def predictTeamAttacking(players_classification, img):
 
 def team_classification(path):
 
-    model_players = YOLO("C:/Users/tbern/Football-Object-Detection-main/weights/best.pt")
+    model_players = YOLO("model/Football_Object_Detection/weights/best.pt")
 
     results = model_players(path)
     image = cv2.imread(path)
@@ -372,31 +363,37 @@ def team_classification(path):
     """
     Calcolo squadra che sta attaccando
     """
+
     percent_team_1, percent_team_2 = predictTeamAttacking(players_classification, image)
 
 
 
     def annotate_image(players_classification, percent_team_1, percent_team_2):
+
         players_team_A = players_classification[team_1] if percent_team_1> percent_team_2 else players_classification[team_2]
         for player in players_team_A:
             x1,y1,x2,y2 = player
             cv2.rectangle(image, (x1,y1), (x2,y2), color=(0,0,255), thickness=2)
-            cv2.putText(image, "Team A", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,0.4, (0,0,255),2)
+            cv2.putText(image, "Team A", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,255),2)
         players_team_B = players_classification[team_2] if percent_team_2 < percent_team_1 else players_classification[team_1]
         for player in players_team_B:
             x1,y1,x2,y2 = player
             cv2.rectangle(image, (x1,y1), (x2,y2), color=(255,0,0), thickness=2)
-            cv2.putText(image, "Team B", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,0.4, (255,0,0),2)
-        cv2.imwrite("C:/Users/tbern/Desktop/AI-lab/9.png", image)
+            cv2.putText(image, "Team B", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,1, (255,0,0),2)
+        if len(goalkeeper_box) > 0:
+            x1,y1,x2,y2 = players_classification[goalkeeper][0]
+            cv2.rectangle(image, (x1,y1), (x2,y2), color=(0,0,0), thickness=2) 
+            cv2.putText(image, "GK", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,0),2)
+        if len(ball_box) > 0:
+            x1,y1,x2,y2 = players_classification[ball][0]
+            cv2.rectangle(image, (x1,y1), (x2,y2), color=(0,0,0), thickness=2) 
+            cv2.putText(image, "Ball", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,0),2)
+        os.chdir("result")
+        cv2.imwrite("teamClassification.png", image)
+        os.chdir("..")
 
     annotate_image(players_classification, percent_team_1, percent_team_2)
 
+
     return players_classification, colors_shirts, image
-
-
-
-
-
-
-
 

@@ -63,7 +63,7 @@ def drawShadowPitch(image, pitch2D, homography:torch.Tensor) -> None:
     
 
 
-def drawOffside(pathImage: str, homography:torch.Tensor, defender:list[list[int]] = 0, attacker: list[list[int]]=0, goalkeeper: list[int]=0 ) -> int:
+def drawOffside(pathImage: str, homography:torch.Tensor, defender:list[list[int]], attacker: list[list[int]], goalkeeper: list[list[int]]) -> int:
     '''Funzione che calcola e disegna sull'immagine 2D e 3D il fuorigioco e le posizioni dei giocatori.
     La funzione prende in input:
     - Il path dell'immagine 3D;
@@ -74,21 +74,21 @@ def drawOffside(pathImage: str, homography:torch.Tensor, defender:list[list[int]
     La funzione ritorna in output il numero di attaccanti in fuorigioco e salva nella cartella result le immagini lavorate.'''
     image = cv2.imread(pathImage)
     pitch2D = cv2.imread("model/sportsfield_release/data/world_cup_template.png")
-    goalkeeper = [741, 549]
+    #goalkeeper = [741, 549]
     ''''
     homography = torch.tensor([[[ 0.2940,  0.0238, -0.3597],
             [-0.2042,  1.1472,  0.1179],
             [ 0.0560,  0.9439,  1.0000]]])
     '''
-    defender = [[1089, 745], [1195, 704], [1496, 579], [892, 881]]
-    attacker = [[833, 785], [1216, 719]]
+    #defender = [[1089, 745], [1195, 704], [1496, 579], [892, 881]]
+    #attacker = [[833, 785], [1216, 719]]
 
     '''Calcola altezza e larghezza della foto'''
     w = len(image[0])
     h = len(image)
 
     '''Calcola la posizione del portiere e da questa deriviamo il lato dell'attacco (Nelle immagini delle azioni è presente sempre un solo portiere)'''
-    p_goalkeeper = convertPoint3Dto2D(homography, goalkeeper, w, h)
+    p_goalkeeper = convertPoint3Dto2D(homography, goalkeeper[0], w, h)
     if p_goalkeeper[0] > 1050/2:
         side = 'right'
     else:

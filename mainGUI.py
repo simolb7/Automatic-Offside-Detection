@@ -1,49 +1,51 @@
+import time
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import PhotoImage, filedialog
 from PIL import ImageTk, Image
 from tkinter import Canvas, Label
 import os
 from PIL import Image, ImageTk, ImageEnhance
+from tkinter import font
 from offside import drawOffside
 from model.sportsfield_release.calculateHomography import calculateOptimHomography
-import threading
+from model.Football_Object_Detection.team_classification import team_classification
+import time
 
-        
+
 def reduce_brightness(image, factor=0.7):
     enhancer = ImageEnhance.Brightness(image)
     return enhancer.enhance(factor)
-
 
 def seleziona_immagine():
     file_path = filedialog.askopenfilename()
     if file_path:
         impostazioni_preprocessamento(file_path)
 
-def visualizza_immagine(file_path, team):
+def visualizza_immagine(file_path, team, dictPlayers):
 
     background = Image.open("GUI/src/images/result.jpg")
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
-    canvas.create_image(0, 0, anchor=tk.NW, image=background)  
-
-    #DA SPOSTARE NELLA SCHERMATA DI CARICAMENTO (FINO A DRAWOFFSIDE)
-
+    canvas.create_image(0, 0, anchor=tk.NW, image=background)
+    
     homography = calculateOptimHomography(file_path)
+    offside = drawOffside(file_path, homography, dictPlayers[0], dictPlayers[1], dictPlayers[2])
 
-    playersOffside = drawOffside(file_path, homography)
-
-    img = Image.open('result/result3D.jpg')
+    img = Image.open(file_path)
     img = img.resize((753, 424))
     img = ImageTk.PhotoImage(img)
     canvas.img = img
     canvas.create_image(0, 159, anchor=tk.NW, image=img)
     
-    img2 = Image.open("result/result2D.png")
-    img2 = img2.resize((512, 300))
+    img2 = Image.open("GUI/src/offside/pitch2D.png")
+    x = 1050
+    y = 680
+    res = 2.4
+    img2 = img2.resize((int(x/res), int(y/res)))
     img2 = ImageTk.PhotoImage(img2)
     canvas.img2 = img2
-    canvas.create_image(769, 159, anchor=tk.NW, image=img2)
+    canvas.create_image(810, 168, anchor=tk.NW, image=img2)
 
     restart_button_img = Image.open("GUI/src/elements/restart_button.png")
     restart_button_img_resized = restart_button_img.resize((200, 50))
@@ -67,27 +69,38 @@ def visualizza_immagine(file_path, team):
     canvas.tag_bind(restart_button, '<Enter>', on_enter_restart)
     canvas.tag_bind(restart_button, '<Leave>', on_leave_restart)
 
-    # Aggiungi il testo bianco sotto il pitch 2D
-    team_label = tk.Label(root, text=f"Team {team} in attacco", font=('Helvetica', 12, 'bold'), fg='white')
-    team_label.config(bg='#2D0C41')  # Imposta il colore di sfondo su #2D0C41
-  # Imposta il colore di sfondo su trasparente
-    canvas.create_window(780, 469, anchor=tk.NW, window=team_label)
+    players_button_img = Image.open(f"GUI/src/images/{offside}.png")
+    players_button_photo = ImageTk.PhotoImage(players_button_img)
+    canvas.players_button = players_button_photo
+    canvas.players_button_img = players_button_img
+    
+    canvas.create_image(1140, 530, image=players_button_photo)
 
-    team_label2 = tk.Label(root, text=f"Giocatori in fuorigioco -players-", font=('Helvetica', 12, 'bold'), fg='white')
-    team_label2.config(bg='#2D0C41')  # Imposta il colore di sfondo su #2D0C41
-  # Imposta il colore di sfondo su trasparente
-    canvas.create_window(780, 500, anchor=tk.NW, window=team_label2)
+    team_button_img = Image.open(f"GUI/src/images/{team}.png")
+    team_button_photo = ImageTk.PhotoImage(team_button_img)
+    canvas.team_button = team_button_photo
+    canvas.team_button_img = team_button_img
+    
+    canvas.create_image(900, 530, image=team_button_photo)
 
-def schermata_di_caricamento():
-    # Mostra la schermata vuota con la rotella di caricamento
+def prova(file_path):
+    homography = calculateOptimHomography(file_path)
+    return homography
+    
+def schermata_di_caricamento(file_path, team, dictPlayers):
     canvas.delete("all")
-    canvas.create_text(640, 360, text="Caricamento...", font=('Helvetica', 20))
+    background = Image.open('GUI/src/images/waiting.jpg')
+    background = background.resize((1280, 720))
+    background = ImageTk.PhotoImage(background)
+    canvas.background = background
+    canvas.create_image(0, 0, anchor=tk.NW, image=background)
+
+    root.after(10, visualizza_immagine, file_path, team, dictPlayers)
 
 def schermata_di_caricamento_loop(file_path, team):
     global stop
-    stop = False  # Variabile per controllare lo stato di arresto
+    stop = False
 
-    # Lista delle immagini di caricamento
     images = [
         Image.open("GUI/src/images/image1.jpg"),
         Image.open("GUI/src/images/image2.jpg"),
@@ -107,17 +120,14 @@ def schermata_di_caricamento_loop(file_path, team):
             idx = (idx + 1) % len(images)  # Passa all'immagine successiva
             root.after(250, show_image, idx)  # Mostra l'immagine successiva dopo un breve ritardo
 
-    # Funzione per gestire l'evento di pressione del pulsante sulla tastiera
     def handle_keypress(event):
         global stop
-        stop = True  # Imposta lo stato di stop su True
-        visualizza_immagine(file_path, team)  # Visualizza l'immagine
+        stop = True
+        visualizza_immagine(file_path, team)
 
-    # Registra la funzione di gestione per l'evento di pressione del pulsante sulla tastiera
     root.bind("<Key>", handle_keypress)
     
-    # Avvia il loop di caricamento
-    show_image(0)  # Inizia con la prima immagine
+    show_image(0)
 
 def start_view():
     for widget in root.winfo_children():
@@ -155,7 +165,7 @@ def start_view():
 
 def impostazioni_preprocessamento(file_path):
     global team
-    team = ""  # Valore iniziale del team
+    team = "A"  # Valore iniziale del team
 
     background = Image.open("GUI/src/images/preprocess.jpg")
     background = background.resize((1280, 720))
@@ -163,8 +173,11 @@ def impostazioni_preprocessamento(file_path):
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)  
 
+    dictPlayers,_,_  = team_classification(file_path)
+    img_path = 'result/teamClassification.png'
+
     imgX = 727
-    img = Image.open(file_path)
+    img = Image.open(img_path)
     img = img.resize((imgX, int((imgX/16) * 9)))
     img = ImageTk.PhotoImage(img)
     canvas.img = img
@@ -226,7 +239,7 @@ def impostazioni_preprocessamento(file_path):
 
     canvas.tag_bind(teamA_button, '<Button-1>', lambda event: scegli_team("A"))
     canvas.tag_bind(teamB_button, '<Button-1>', lambda event: scegli_team("B"))
-    canvas.tag_bind(process_button, '<Button-1>', lambda event: (schermata_di_caricamento_loop(file_path, team)))
+    canvas.tag_bind(process_button, '<Button-1>', lambda event: schermata_di_caricamento(file_path, team, dictPlayers))
     canvas.tag_bind(process_button, '<Enter>', on_enter_process)
     canvas.tag_bind(process_button, '<Leave>', on_leave_process)
 
@@ -242,8 +255,6 @@ icon_path = 'GUI/src/icons/logo.ico'
 im = Image.open(icon_path)
 photo = ImageTk.PhotoImage(im)
 root.wm_iconphoto(True, photo)
-
-#root.iconbitmap(icon_path)
 
 canvas = tk.Canvas(root, width=1280, height=720, highlightthickness=0)
 canvas.pack()
