@@ -93,11 +93,14 @@ def visualizza_immagine(file_path, team, players):
     canvas.tag_bind(restart_button, '<Enter>', on_enter_restart)
     canvas.tag_bind(restart_button, '<Leave>', on_leave_restart)
 
-    players_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{players}.png")
+    if players == 0:
+        players_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/no_offside.png")
+    else:
+        players_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{players}.png")
+    
     players_button_photo = ImageTk.PhotoImage(players_button_img)
     canvas.players_button = players_button_photo
-    canvas.players_button_img = players_button_img
-    
+    canvas.players_button_img = players_button_img   
     canvas.create_image(1140, 530, image=players_button_photo)
 
     team_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{team}.png")
@@ -118,7 +121,7 @@ def schermata_di_caricamento(file_path, team):
     def handle_keypress(event):
         global stop
         stop = True
-        visualizza_immagine(file_path, team, 8)
+        visualizza_immagine(file_path, team, 0)
 
     root.bind("<Key>", handle_keypress)
 
