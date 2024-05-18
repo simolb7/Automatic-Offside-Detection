@@ -6,38 +6,11 @@ from tkinter import Canvas, Label
 import os
 from PIL import Image, ImageTk, ImageEnhance
 from tkinter import font
-import tkinter as tk
-import tkinter as tk
-import _thread
-import pyglet
+from offside import drawOffside
+from model.sportsfield_release.calculateHomography import calculateOptimHomography
+import time
 
-class gifplay:
 
-        def __init__(self,label,gif_file_path,delay):
-            self.frame=[]
-            i=0
-            while 1:
-                try:
-                    image=PhotoImage(file = gif_file_path, format="gif -index "+str(i))
-                    self.frame.append(image)
-                    i=i+1
-                except:
-                    break
-            print(i)
-            self.totalFrames=i-1
-            self.delay=delay
-            self.labelspace=label
-            self.labelspace.image=self.frame[0]
-
-        def play(self):
-            _thread.start_new_thread(self.infinite,())
-
-        def infinite(self):
-            i=0
-            while 1:
-                self.labelspace.configure(image=self.frame[i])
-                i=(i+1)%self.totalFrames
-                time.sleep(self.delay)
 
 def reduce_brightness(image, factor=0.7):
     enhancer = ImageEnhance.Brightness(image)
@@ -48,12 +21,16 @@ def seleziona_immagine():
     if file_path:
         impostazioni_preprocessamento(file_path)
 
-def visualizza_immagine(file_path, team, players):
-    background = Image.open("Automatic Offside Recognition GUI/src/images/result.jpg")
+def visualizza_immagine(file_path, team):
+
+    background = Image.open("GUI/src/images/result.jpg")
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
-    canvas.create_image(0, 0, anchor=tk.NW, image=background)  
+    canvas.create_image(0, 0, anchor=tk.NW, image=background)
+    
+    homography = calculateOptimHomography(file_path)
+    offside = drawOffside(file_path, homography)
 
     img = Image.open(file_path)
     img = img.resize((753, 424))
@@ -61,7 +38,7 @@ def visualizza_immagine(file_path, team, players):
     canvas.img = img
     canvas.create_image(0, 159, anchor=tk.NW, image=img)
     
-    img2 = Image.open("Automatic Offside Recognition GUI/src/offside/pitch2D.png")
+    img2 = Image.open("GUI/src/offside/pitch2D.png")
     x = 1050
     y = 680
     res = 2.4
@@ -92,48 +69,33 @@ def visualizza_immagine(file_path, team, players):
     canvas.tag_bind(restart_button, '<Enter>', on_enter_restart)
     canvas.tag_bind(restart_button, '<Leave>', on_leave_restart)
 
-    players_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{players}.png")
+    players_button_img = Image.open(f"GUI/src/images/{offside}.png")
     players_button_photo = ImageTk.PhotoImage(players_button_img)
     canvas.players_button = players_button_photo
     canvas.players_button_img = players_button_img
     
     canvas.create_image(1140, 530, image=players_button_photo)
 
-    team_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{team}.png")
+    team_button_img = Image.open(f"GUI/src/images/{team}.png")
     team_button_photo = ImageTk.PhotoImage(team_button_img)
     canvas.team_button = team_button_photo
     canvas.team_button_img = team_button_img
     
     canvas.create_image(900, 530, image=team_button_photo)
 
+def prova(file_path):
+    homography = calculateOptimHomography(file_path)
+    return homography
+    
 def schermata_di_caricamento(file_path, team):
     canvas.delete("all")
-    background = Image.open('Automatic Offside Recognition GUI/src/images/waiting.jpg')
+    background = Image.open('GUI/src/images/waiting.jpg')
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)
 
-    def handle_keypress(event):
-        global stop
-        stop = True
-        visualizza_immagine(file_path, team, 8)
-
-    root.bind("<Key>", handle_keypress)
-
-
-
-def schermata_di_caricamento_gif(file_path, team):
-
-    gif_file_path = "Automatic Offside Recognition GUI\src\loading.gif"
-
-    background_image = Image.open("Automatic Offside Recognition GUI\src\images\start.jpg")
-    background_photo = ImageTk.PhotoImage(background_image)
-    label = tk.Label(root, image=background_photo)
-    label.pack()
-    
-    gif = gifplay(label, gif_file_path,0.1)
-    gif.play()
+    root.after(10, visualizza_immagine, file_path, team)
 
 
 def schermata_di_caricamento_loop(file_path, team):
