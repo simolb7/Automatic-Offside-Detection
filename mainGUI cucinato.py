@@ -93,17 +93,19 @@ def visualizza_immagine(file_path, team, players):
     canvas.tag_bind(restart_button, '<Enter>', on_enter_restart)
     canvas.tag_bind(restart_button, '<Leave>', on_leave_restart)
 
-    team_label = tk.Label(root, text=f"{team}", font=('Helvetica', 30, 'bold'), fg='white')
-    team_label.config(bg='#2D0C41')
-    team_label.pack()
+    players_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{players}.png")
+    players_button_photo = ImageTk.PhotoImage(players_button_img)
+    canvas.players_button = players_button_photo
+    canvas.players_button_img = players_button_img
+    
+    canvas.create_image(1140, 530, image=players_button_photo)
 
-    canvas.create_window(880, 515, anchor=tk.NW, window=team_label)
-
-    team_label2 = tk.Label(root, text=f"{players}", font=('Helvetica', 30, 'bold'), fg='white')
-    team_label2.config(bg='#2D0C41')  # Imposta il colore di sfondo su #2D0C41
-  # Imposta il colore di sfondo su trasparente
-    canvas.create_window(1110, 515, anchor=tk.NW, window=team_label2)
-
+    team_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{team}.png")
+    team_button_photo = ImageTk.PhotoImage(team_button_img)
+    canvas.team_button = team_button_photo
+    canvas.team_button_img = team_button_img
+    
+    canvas.create_image(900, 530, image=team_button_photo)
 
 def schermata_di_caricamento(file_path, team):
     canvas.delete("all")
@@ -116,7 +118,7 @@ def schermata_di_caricamento(file_path, team):
     def handle_keypress(event):
         global stop
         stop = True
-        visualizza_immagine(file_path, team, 12)
+        visualizza_immagine(file_path, team, 8)
 
     root.bind("<Key>", handle_keypress)
 
