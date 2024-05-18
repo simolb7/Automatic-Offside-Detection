@@ -2,7 +2,8 @@ import cv2
 import torch
 import numpy as np
 import os
-
+import model.sportsfield_release.utils.image_utils as utils
+import model.sportsfield_release.utils.warp as warp
 
 
 def convertPoint3Dto2D(homography: torch.Tensor, p: list, w: int, h: int) -> list[float]:
@@ -57,6 +58,10 @@ def convertPoint2Dto3D(homography: torch.Tensor, p: list, w: int, h: int) -> lis
 
     return [x_warped, y_warped]
 
+def drawShadowPitch(image, pitch2D, homography:torch.Tensor) -> None:
+    None
+    
+
 
 def drawOffside(pathImage: str, homography:torch.Tensor, defender:list[list[int]] = 0, attacker: list[list[int]]=0, goalkeeper: list[int]=0 ) -> int:
     '''Funzione che calcola e disegna sull'immagine 2D e 3D il fuorigioco e le posizioni dei giocatori.
@@ -110,6 +115,7 @@ def drawOffside(pathImage: str, homography:torch.Tensor, defender:list[list[int]
         inver_homography = torch.inverse(homography)
         p1_3D = convertPoint2Dto3D(inver_homography, p1_2D, w, h)
         p2_3D = convertPoint2Dto3D(inver_homography, p2_2D, w, h)
+        
         image = cv2.line(image, (int(p1_3D[0]), int(p1_3D[1])), (int(p2_3D[0]), int(p2_3D[1])), (0, 255, 255), 3)
         '''Conversione dei punti dei difensori sull'immagine 2D per agevolare la ricerca degli attaccanti in fuorigioco. Per l'attacco a destra sono tutti
         quelli la cui coordinata x è maggiore della coordinata x dell'ultimo difensore. Vengono quindi disegnati sull'immagine 2D gli attaccanti.'''
@@ -146,6 +152,7 @@ def drawOffside(pathImage: str, homography:torch.Tensor, defender:list[list[int]
         inver_homography = torch.inverse(homography)
         p1_3D = convertPoint2Dto3D(inver_homography, p1_2D, w, h)
         p2_3D = convertPoint2Dto3D(inver_homography, p2_2D, w, h)
+        print(p1_3D, p2_3D)
         image = cv2.line(image, (int(p1_3D[0]), int(p1_3D[1])), (int(p2_3D[0]), int(p2_3D[1])), (0, 255, 255), 3)
         '''Conversione dei punti dei difensori sull'immagine 2D per agevolare la ricerca degli attaccanti in fuorigioco. Per l'attacco a sinistra sono tutti
         quelli la cui coordinata x è minore della coordinata x dell'ultimo difensore. Vengono quindi disegnati sull'immagine 2D gli attaccanti.'''

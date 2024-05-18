@@ -8,10 +8,6 @@ from offside import drawOffside
 from model.sportsfield_release.calculateHomography import calculateOptimHomography
 import threading
 
-def start_thread(file_path):
-        thread = threading.Thread(target=calculateOptimHomography(file_path))
-        thread.start()
-        
         
 def reduce_brightness(image, factor=0.7):
     enhancer = ImageEnhance.Brightness(image)
@@ -33,9 +29,9 @@ def visualizza_immagine(file_path, team):
 
     #DA SPOSTARE NELLA SCHERMATA DI CARICAMENTO (FINO A DRAWOFFSIDE)
 
-    #homography = calculateOptimHomography(file_path)
+    homography = calculateOptimHomography(file_path)
 
-    #playersOffside = drawOffside(file_path, homography)
+    playersOffside = drawOffside(file_path, homography)
 
     img = Image.open('result/result3D.jpg')
     img = img.resize((753, 424))
@@ -93,10 +89,10 @@ def schermata_di_caricamento_loop(file_path, team):
 
     # Lista delle immagini di caricamento
     images = [
-        Image.open("GUI\src\images\image1.jpg"),
-        Image.open("GUI\src\images\image2.jpg"),
-        Image.open("GUI\src\images\image3.jpg"),
-        Image.open("GUI\src\images\image4.jpg")
+        Image.open("GUI/src/images/image1.jpg"),
+        Image.open("GUI/src/images/image2.jpg"),
+        Image.open("GUI/src/images/image3.jpg"),
+        Image.open("GUI/src/images/image4.jpg")
     ]
     
     # Funzione per mostrare le immagini a intervalli
@@ -230,7 +226,7 @@ def impostazioni_preprocessamento(file_path):
 
     canvas.tag_bind(teamA_button, '<Button-1>', lambda event: scegli_team("A"))
     canvas.tag_bind(teamB_button, '<Button-1>', lambda event: scegli_team("B"))
-    canvas.tag_bind(process_button, '<Button-1>', lambda event: (schermata_di_caricamento_loop(file_path, team), start_thread(file_path)))
+    canvas.tag_bind(process_button, '<Button-1>', lambda event: (schermata_di_caricamento_loop(file_path, team)))
     canvas.tag_bind(process_button, '<Enter>', on_enter_process)
     canvas.tag_bind(process_button, '<Leave>', on_leave_process)
 
@@ -247,7 +243,7 @@ im = Image.open(icon_path)
 photo = ImageTk.PhotoImage(im)
 root.wm_iconphoto(True, photo)
 
-root.iconbitmap(icon_path)
+#root.iconbitmap(icon_path)
 
 canvas = tk.Canvas(root, width=1280, height=720, highlightthickness=0)
 canvas.pack()

@@ -79,10 +79,10 @@ def schermata_di_caricamento_loop(file_path, team):
 
     # Lista delle immagini di caricamento
     images = [
-        Image.open("GUI\src\images\image1.jpg"),
-        Image.open("GUI\src\images\image2.jpg"),
-        Image.open("GUI\src\images\image3.jpg"),
-        Image.open("GUI\src\images\image4.jpg")
+        Image.open("GUI/src/images/image1.jpg"),
+        Image.open("GUI/src/images/image2.jpg"),
+        Image.open("GUI/src/images/image3.jpg"),
+        Image.open("GUI/src/images/image4.jpg")
     ]
     
     # Funzione per mostrare le immagini a intervalli
@@ -232,8 +232,6 @@ icon_path = 'GUI/src/icons/logo.ico'
 im = Image.open(icon_path)
 photo = ImageTk.PhotoImage(im)
 root.wm_iconphoto(True, photo)
-
-root.iconbitmap(icon_path)
 
 canvas = tk.Canvas(root, width=1280, height=720, highlightthickness=0)
 canvas.pack()
