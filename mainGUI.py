@@ -21,7 +21,7 @@ def seleziona_immagine():
     if file_path:
         impostazioni_preprocessamento(file_path)
 
-def visualizza_immagine(file_path, team, dictPlayers):
+def visualizza_immagine(file_path, team, dictPlayers, colors):
 
     background = Image.open("GUI/src/images/result.jpg")
     background = background.resize((1280, 720))
@@ -30,15 +30,18 @@ def visualizza_immagine(file_path, team, dictPlayers):
     canvas.create_image(0, 0, anchor=tk.NW, image=background)
     
     homography = calculateOptimHomography(file_path)
-    offside = drawOffside(file_path, homography, dictPlayers[0], dictPlayers[1], dictPlayers[2])
+    if team != "A":
+        offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team A'], dictPlayers['Team B'], dictPlayers['goalkeeper'])
+    else:
+        offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team B'], dictPlayers['Team A'], dictPlayers['goalkeeper'])
 
-    img = Image.open(file_path)
+    img = Image.open('result/result3D.jpg')
     img = img.resize((753, 424))
     img = ImageTk.PhotoImage(img)
     canvas.img = img
     canvas.create_image(0, 159, anchor=tk.NW, image=img)
     
-    img2 = Image.open("GUI/src/offside/pitch2D.png")
+    img2 = Image.open("result/result2D.png")
     x = 1050
     y = 680
     res = 2.4
@@ -83,11 +86,7 @@ def visualizza_immagine(file_path, team, dictPlayers):
     
     canvas.create_image(900, 530, image=team_button_photo)
 
-def prova(file_path):
-    homography = calculateOptimHomography(file_path)
-    return homography
-    
-def schermata_di_caricamento(file_path, team, dictPlayers):
+def schermata_di_caricamento(file_path, team, dictPlayers, colors):
     canvas.delete("all")
     background = Image.open('GUI/src/images/waiting.jpg')
     background = background.resize((1280, 720))
@@ -95,7 +94,7 @@ def schermata_di_caricamento(file_path, team, dictPlayers):
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)
 
-    root.after(10, visualizza_immagine, file_path, team, dictPlayers)
+    root.after(10, visualizza_immagine, file_path, team, dictPlayers, colors)
 
 def schermata_di_caricamento_loop(file_path, team):
     global stop
@@ -173,7 +172,7 @@ def impostazioni_preprocessamento(file_path):
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)  
 
-    dictPlayers,_,_  = team_classification(file_path)
+    dictPlayers,colors,_  = team_classification(file_path)
     img_path = 'result/teamClassification.png'
 
     imgX = 727
@@ -239,7 +238,7 @@ def impostazioni_preprocessamento(file_path):
 
     canvas.tag_bind(teamA_button, '<Button-1>', lambda event: scegli_team("A"))
     canvas.tag_bind(teamB_button, '<Button-1>', lambda event: scegli_team("B"))
-    canvas.tag_bind(process_button, '<Button-1>', lambda event: schermata_di_caricamento(file_path, team, dictPlayers))
+    canvas.tag_bind(process_button, '<Button-1>', lambda event: schermata_di_caricamento(file_path, team, dictPlayers, colors))
     canvas.tag_bind(process_button, '<Enter>', on_enter_process)
     canvas.tag_bind(process_button, '<Leave>', on_leave_process)
 
