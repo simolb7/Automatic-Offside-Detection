@@ -1,10 +1,43 @@
+import time
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import PhotoImage, filedialog
 from PIL import ImageTk, Image
 from tkinter import Canvas, Label
 import os
 from PIL import Image, ImageTk, ImageEnhance
-import threading
+from tkinter import font
+import tkinter as tk
+import tkinter as tk
+import _thread
+import pyglet
+
+class gifplay:
+
+        def __init__(self,label,gif_file_path,delay):
+            self.frame=[]
+            i=0
+            while 1:
+                try:
+                    image=PhotoImage(file = gif_file_path, format="gif -index "+str(i))
+                    self.frame.append(image)
+                    i=i+1
+                except:
+                    break
+            print(i)
+            self.totalFrames=i-1
+            self.delay=delay
+            self.labelspace=label
+            self.labelspace.image=self.frame[0]
+
+        def play(self):
+            _thread.start_new_thread(self.infinite,())
+
+        def infinite(self):
+            i=0
+            while 1:
+                self.labelspace.configure(image=self.frame[i])
+                i=(i+1)%self.totalFrames
+                time.sleep(self.delay)
 
 def reduce_brightness(image, factor=0.7):
     enhancer = ImageEnhance.Brightness(image)
@@ -15,8 +48,8 @@ def seleziona_immagine():
     if file_path:
         impostazioni_preprocessamento(file_path)
 
-def visualizza_immagine(file_path, team):
-    background = Image.open("GUI/src/images/result.jpg")
+def visualizza_immagine(file_path, team, players):
+    background = Image.open("Automatic Offside Recognition GUI/src/images/result.jpg")
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
@@ -28,11 +61,14 @@ def visualizza_immagine(file_path, team):
     canvas.img = img
     canvas.create_image(0, 159, anchor=tk.NW, image=img)
     
-    img2 = Image.open("GUI/src/offside/pitch2D.png")
-    img2 = img2.resize((512, 300))
+    img2 = Image.open("Automatic Offside Recognition GUI/src/offside/pitch2D.png")
+    x = 1050
+    y = 680
+    res = 2.4
+    img2 = img2.resize((int(x/res), int(y/res)))
     img2 = ImageTk.PhotoImage(img2)
     canvas.img2 = img2
-    canvas.create_image(769, 159, anchor=tk.NW, image=img2)
+    canvas.create_image(810, 168, anchor=tk.NW, image=img2)
 
     restart_button_img = Image.open("GUI/src/elements/restart_button.png")
     restart_button_img_resized = restart_button_img.resize((200, 50))
@@ -56,28 +92,54 @@ def visualizza_immagine(file_path, team):
     canvas.tag_bind(restart_button, '<Enter>', on_enter_restart)
     canvas.tag_bind(restart_button, '<Leave>', on_leave_restart)
 
-    # Aggiungi il testo bianco sotto il pitch 2D
-    team_label = tk.Label(root, text=f"Team {team} in attacco", font=('Helvetica', 12, 'bold'), fg='white')
-    team_label.config(bg='#2D0C41')  # Imposta il colore di sfondo su #2D0C41
-  # Imposta il colore di sfondo su trasparente
-    canvas.create_window(780, 469, anchor=tk.NW, window=team_label)
+    players_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{players}.png")
+    players_button_photo = ImageTk.PhotoImage(players_button_img)
+    canvas.players_button = players_button_photo
+    canvas.players_button_img = players_button_img
+    
+    canvas.create_image(1140, 530, image=players_button_photo)
 
-    team_label2 = tk.Label(root, text=f"Giocatori in fuorigioco -players-", font=('Helvetica', 12, 'bold'), fg='white')
-    team_label2.config(bg='#2D0C41')  # Imposta il colore di sfondo su #2D0C41
-  # Imposta il colore di sfondo su trasparente
-    canvas.create_window(780, 500, anchor=tk.NW, window=team_label2)
+    team_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{team}.png")
+    team_button_photo = ImageTk.PhotoImage(team_button_img)
+    canvas.team_button = team_button_photo
+    canvas.team_button_img = team_button_img
+    
+    canvas.create_image(900, 530, image=team_button_photo)
 
-
-def schermata_di_caricamento():
-    # Mostra la schermata vuota con la rotella di caricamento
+def schermata_di_caricamento(file_path, team):
     canvas.delete("all")
-    canvas.create_text(640, 360, text="Caricamento...", font=('Helvetica', 20))
+    background = Image.open('Automatic Offside Recognition GUI/src/images/waiting.jpg')
+    background = background.resize((1280, 720))
+    background = ImageTk.PhotoImage(background)
+    canvas.background = background
+    canvas.create_image(0, 0, anchor=tk.NW, image=background)
+
+    def handle_keypress(event):
+        global stop
+        stop = True
+        visualizza_immagine(file_path, team, 8)
+
+    root.bind("<Key>", handle_keypress)
+
+
+
+def schermata_di_caricamento_gif(file_path, team):
+
+    gif_file_path = "Automatic Offside Recognition GUI\src\loading.gif"
+
+    background_image = Image.open("Automatic Offside Recognition GUI\src\images\start.jpg")
+    background_photo = ImageTk.PhotoImage(background_image)
+    label = tk.Label(root, image=background_photo)
+    label.pack()
+    
+    gif = gifplay(label, gif_file_path,0.1)
+    gif.play()
+
 
 def schermata_di_caricamento_loop(file_path, team):
     global stop
-    stop = False  # Variabile per controllare lo stato di arresto
+    stop = False
 
-    # Lista delle immagini di caricamento
     images = [
         Image.open("GUI\src\images\image1.jpg"),
         Image.open("GUI\src\images\image2.jpg"),
@@ -97,17 +159,14 @@ def schermata_di_caricamento_loop(file_path, team):
             idx = (idx + 1) % len(images)  # Passa all'immagine successiva
             root.after(250, show_image, idx)  # Mostra l'immagine successiva dopo un breve ritardo
 
-    # Funzione per gestire l'evento di pressione del pulsante sulla tastiera
     def handle_keypress(event):
         global stop
-        stop = True  # Imposta lo stato di stop su True
-        visualizza_immagine(file_path, team)  # Visualizza l'immagine
+        stop = True
+        visualizza_immagine(file_path, team)
 
-    # Registra la funzione di gestione per l'evento di pressione del pulsante sulla tastiera
     root.bind("<Key>", handle_keypress)
     
-    # Avvia il loop di caricamento
-    show_image(0)  # Inizia con la prima immagine
+    show_image(0)
 
 def start_view():
     for widget in root.winfo_children():
@@ -145,7 +204,7 @@ def start_view():
 
 def impostazioni_preprocessamento(file_path):
     global team
-    team = ""  # Valore iniziale del team
+    team = "A"  # Valore iniziale del team
 
     background = Image.open("GUI/src/images/preprocess.jpg")
     background = background.resize((1280, 720))
@@ -216,7 +275,7 @@ def impostazioni_preprocessamento(file_path):
 
     canvas.tag_bind(teamA_button, '<Button-1>', lambda event: scegli_team("A"))
     canvas.tag_bind(teamB_button, '<Button-1>', lambda event: scegli_team("B"))
-    canvas.tag_bind(process_button, '<Button-1>', lambda event: schermata_di_caricamento_loop(file_path, team))
+    canvas.tag_bind(process_button, '<Button-1>', lambda event: schermata_di_caricamento(file_path, team))
     canvas.tag_bind(process_button, '<Enter>', on_enter_process)
     canvas.tag_bind(process_button, '<Leave>', on_leave_process)
 
