@@ -245,10 +245,10 @@ def predictTeamAttacking(players_classification, img):
                 coordinates_team_1.append(center)
             elif key == 1:
                 coordinates_team_2.append(center)
-            elif key == 2:
+            elif key == 'goalkeeper':
                 existGoalkeeper = True
                 coordinates_goalkeeper.append(center)
-            elif key == 3:
+            elif key == 'ball':
                 existBall = True
                 coordinates_ball.append(center)
 
@@ -343,18 +343,16 @@ def team_classification(path):
     
     kmeans_colors = get_dominant_colors(team_colors)
     dominant_colors = kmeans_colors.cluster_centers_.astype(int)
-    colors_shirts = []
-    team_classification = dict()
+    color_classification = dict()
     team_1 = 0
     team_2 = 1
-    goalkeeper = 2
-    ball = 3
+    goalkeeper = 'goalkeeper'
+    ball = 'ball'
     for color in dominant_colors:
-        colors_shirts.append(color)
-        if team_1 in team_classification:
-            team_classification[team_2] = color
+        if team_1 in color_classification:
+            color_classification[team_2] = color
         else:
-            team_classification[team_1] = color
+            color_classification[team_1] = color
 
     players_classification = dict()
     players_classification[team_1] = []
@@ -362,8 +360,8 @@ def team_classification(path):
     if len(goalkeeper_box) > 0: players_classification[goalkeeper] = goalkeeper_box
     if len(ball_box) > 0: players_classification[ball] = ball_box
     for i, color in enumerate(team_colors):
-        distance_team_1 = computeDistance(color, team_classification[team_1])
-        distance_team_2 = computeDistance(color, team_classification[team_2])
+        distance_team_1 = computeDistance(color, color_classification[team_1])
+        distance_team_2 = computeDistance(color, color_classification[team_2])
         if distance_team_1 < distance_team_2:
             players_classification[team_1].append(players_boxes[i])
         else:
@@ -374,25 +372,35 @@ def team_classification(path):
     """
     percent_team_1, percent_team_2 = predictTeamAttacking(players_classification, image)
 
+    if percent_team_1 > percent_team_2:
+        players_classification['Team A'] = players_classification.pop(team_1)
+        players_classification['Team B'] = players_classification.pop(team_2)
+        color_classification['Team A'] = color_classification.pop(team_1)
+        color_classification['Team B'] = color_classification.pop(team_2)
 
-
-    def annotate_image(players_classification, percent_team_1, percent_team_2):
-        players_team_A = players_classification[team_1] if percent_team_1> percent_team_2 else players_classification[team_2]
+    else:
+        players_classification['Team A'] = players_classification.pop(team_2)
+        players_classification['Team B'] = players_classification.pop(team_1)
+        color_classification['Team A'] = color_classification.pop(team_2)
+        color_classification['Team B'] = color_classification.pop(team_1)
+    
+    
+    def annotate_image(players_classification):
+        players_team_A = players_classification['Team A']
         for player in players_team_A:
             x1,y1,x2,y2 = player
             cv2.rectangle(image, (x1,y1), (x2,y2), color=(0,0,255), thickness=2)
             cv2.putText(image, "Team A", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,0.4, (0,0,255),2)
-        players_team_B = players_classification[team_2] if percent_team_2 < percent_team_1 else players_classification[team_1]
+        players_team_B = players_classification['Team B'] 
         for player in players_team_B:
             x1,y1,x2,y2 = player
             cv2.rectangle(image, (x1,y1), (x2,y2), color=(255,0,0), thickness=2)
             cv2.putText(image, "Team B", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,0.4, (255,0,0),2)
         cv2.imwrite("C:/Users/tbern/Desktop/AI-lab/9.png", image)
 
-    annotate_image(players_classification, percent_team_1, percent_team_2)
+    annotate_image(players_classification)
 
-    return players_classification, colors_shirts, image
-
+    return players_classification, color_classification, image
 
 
 
