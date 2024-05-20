@@ -105,38 +105,6 @@ def schermata_di_caricamento(file_path, team, dictPlayers, colors):
 
     root.after(10, visualizza_immagine, file_path, team, dictPlayers, colors)
 
-def schermata_di_caricamento_loop(file_path, team):
-    global stop
-    stop = False
-
-    images = [
-        Image.open("GUI/src/images/image1.jpg"),
-        Image.open("GUI/src/images/image2.jpg"),
-        Image.open("GUI/src/images/image3.jpg"),
-        Image.open("GUI/src/images/image4.jpg")
-    ]
-    
-    # Funzione per mostrare le immagini a intervalli
-    def show_image(idx=0):
-        if not stop:  # Continua solo se lo stato di stop è False
-            canvas.delete("all")
-            image = images[idx].resize((1280, 720))
-            background = ImageTk.PhotoImage(image)
-            canvas.background = background
-            canvas.create_image(0, 0, anchor=tk.NW, image=background) 
-
-            idx = (idx + 1) % len(images)  # Passa all'immagine successiva
-            root.after(250, show_image, idx)  # Mostra l'immagine successiva dopo un breve ritardo
-
-    def handle_keypress(event):
-        global stop
-        stop = True
-        visualizza_immagine(file_path, team)
-
-    root.bind("<Key>", handle_keypress)
-    
-    show_image(0)
-
 def start_view():
     for widget in root.winfo_children():
         if isinstance(widget, tk.Label):

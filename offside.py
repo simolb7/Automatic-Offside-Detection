@@ -62,6 +62,40 @@ def drawShadowPitch(image, pitch2D, homography:torch.Tensor) -> None:
     None
     
 
+def putPng(image, tag, position) -> None:
+    if tag.shape[2] == 4:
+    # Separa i canali RGBA
+        b, g, r, a = cv2.split(tag)
+
+        print('position', position)
+        
+        # Crea una maschera e la sua inversa utilizzando il canale alfa
+        maschera = cv2.merge([a, a, a])
+        maschera_inversa = cv2.bitwise_not(maschera)
+        
+        # Definisci le dimensioni dell'immagine da sovrapporre
+        altezza_sovrapposta, larghezza_sovrapposta = tag.shape[:2]
+        print('h e 2: ',altezza_sovrapposta, larghezza_sovrapposta)
+        
+        # Specifica la posizione (x, y) dove vuoi inserire l'immagine sovrapposta
+        x,y = position[0], position[1]
+        print('valori: ', x,y)
+   
+        # Crea la ROI sull'immagine di sfondo
+        roi = image[y:y+altezza_sovrapposta, x:x+larghezza_sovrapposta]
+        
+        # Usa la maschera inversa per oscurare l'area della ROI nel sfondo
+        sfondo_bg = cv2.bitwise_and(roi, roi, mask=maschera_inversa[:, :, 0])
+        
+        # Usa la maschera per estrarre la parte dell'immagine sovrapposta
+        sovrapposta_fg = cv2.bitwise_and(tag[:, :, :3], tag[:, :, :3], mask=maschera[:, :, 0])
+        
+        # Combina lo sfondo e l'immagine sovrapposta
+        combinata = cv2.add(sfondo_bg, sovrapposta_fg)
+        
+        # Inserisci la combinazione nella ROI del sfondo
+        image[y:y+altezza_sovrapposta, x:x+larghezza_sovrapposta] = combinata
+
 
 def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homography:torch.Tensor, defender:list[list[int]], attacker: list[list[int]], goalkeeper: list[list[int]]=0) -> int:
     '''Funzione che calcola e disegna sull'immagine 2D e 3D il fuorigioco e le posizioni dei giocatori.
@@ -80,7 +114,7 @@ def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homogr
             [-0.2042,  1.1472,  0.1179],
             [ 0.0560,  0.9439,  1.0000]]])
     '''
-    
+    offside_tag = cv2.imread('GUI/src/images/resizedTag.png',  cv2.IMREAD_UNCHANGED)
 
     '''Calcola altezza e larghezza della foto'''
     w = len(image[0])
@@ -147,7 +181,10 @@ def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homogr
             if p[0] < last_def[0]:
                 offside.append(p)
                 #CAMBIARE FONT
-                cv2.putText(image, "Offside", (attacker[i][0]-30, attacker[i][1]-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,0),2)
+                mediax = round(((attacker[i][2]-attacker[i][0])/2)+attacker[i][0])
+
+                putPng(image, offside_tag, [mediax-65,attacker[i][1]-53])
+
 
     if side == 'right':
         last_def = max(defender2D, key=lambda x: x[0])
@@ -161,7 +198,16 @@ def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homogr
             if p[0] > last_def[0]:
                 offside.append(p)
                 #CAMBIARE FONT
-                cv2.putText(image, "Offside", (attacker[i][0]-30, attacker[i][1]-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,0),2)
+                print('posizione: ',attacker[i][0], attacker[i][1], attacker[i][2], attacker[i][3])
+                #image[ attacker[i][1]-10:attacker[i][1]-10+h_tag, attacker[i][0]-30:attacker[i][0]-30+w_tag] = resizeTag
+                #cv2.rectangle(image, (attacker[i][0], attacker[i][1]), (attacker[i][2], attacker[i][3]), color=(0,255,255), thickness=2) 
+                #cv2.putText(image, "Offside", (attacker[i][0]-30, attacker[i][1]-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,0),2)
+                #putPng(image, offside_tag, [attacker[i][0]-55, attacker[i][1]-50])
+                
+
+                mediax = round(((attacker[i][2]-attacker[i][0])/2)+attacker[i][0])
+
+                putPng(image, offside_tag, [mediax-65,attacker[i][1]-53])
 
 
     for p in attacker2D:
