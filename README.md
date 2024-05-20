@@ -10,7 +10,7 @@ Project for the course 'Ai Lab'
 - lista requirements
 
 # Download Weights to insert into model/sportsfield_release/out -> https://drive.google.com/drive/folders/1CXyRhw3WUcZj8UItCA0oA9utbg-V-V_2?usp=drive_link
-'''
+```
 ├── GUI
 │   └── src
 │       ├── elements
@@ -68,5 +68,5 @@ Project for the course 'Ai Lab'
 ├── __pycache__
 ├── result
 └── samples
-'''
+```
 
