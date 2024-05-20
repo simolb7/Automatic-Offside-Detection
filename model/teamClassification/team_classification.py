@@ -13,7 +13,9 @@ def predictTeamAttacking(players_classification, img):
     def getAreas(coordinates_team_1, coordinates_team_2):
 
         """
-        Calcola l'area formata dai giocatori più esterni di tutte le due squadre
+        Calcola l'area formata dai giocatori più esterni di tutte le due squadre. Per ogni squadra vengono presi tutti i 
+        punti rappresentanti i giocatori e ne viene calcola l'inviluppo convesso per trovare quelli più esterni. Unendoù
+        tutti i punti più esterni viene tracciata un'aerea della quale viene calcolata la superficie.
         
         Args:
             coordinate giocatori squadra 1, coordinate giocatori squadra 2
@@ -61,8 +63,11 @@ def predictTeamAttacking(players_classification, img):
                 area -= points[j][0] * points[i][1]
             area = abs(area) / 2.0
             return area
+        
+        os.chdir("result")
+        cv2.imwrite("PolygonsPlayerPoints.png", img_empty)
+        os.chdir("..")
 
-        cv2.waitKey(0)
 
         area_points_team_1 = calculate_area(hull_points_team_1.squeeze())
         area_points_team_2 = calculate_area(hull_points_team_2.squeeze())
@@ -71,7 +76,9 @@ def predictTeamAttacking(players_classification, img):
     
     def getPlayerCloserToGoalkeeper(coordinates_team_1, coordinates_team_2, coordinates_goalkeeper):
         """
-        Calcola il numero dei giocatori per ogni squadra che sono più vicini al portiere ( se il portiere esiste)
+        Calcola il numero dei giocatori per ogni squadra che sono più vicini al portiere ( se il portiere esiste). Per ogni giocatore
+        viene calcolata la distanza dal punto rappresentante il portiere nell'immagine. Vengono presi i x giocatori vicini al portiere
+        e vengono contati il numero di giocatori per ogni squadra in questi x giocatori
 
         Args:
             Coordinate dei giocatori delle due squadre, coordinate del portiere sempre come tuple (x1, y1)
@@ -79,7 +86,7 @@ def predictTeamAttacking(players_classification, img):
         Returns:
             numero di giocatori vicini al portiere della squadra 1, numero di giocatori vicini al portiere della squadra 2
             se il portiere esiste altrimenti 0
-            numero di giocatori totali preso per il calcolo
+            numero di giocatori totali preso per il calcolo se il portiere esiste altrimenti 0
         """
         counter_team_1 = 0
         counter_team_2 = 0
@@ -102,12 +109,12 @@ def predictTeamAttacking(players_classification, img):
                     counter_team_1 += 1
                 else:
                     counter_team_2 += 1
-
         return counter_team_1, counter_team_2, max_players_near_goalkeeper
     
     def getTeamCloserToBall(coordinates_team_1, coordinates_team_2, coordinates_ball):
         """
-        Calcola la squadra che è più vicina alla palla
+        Calcola la squadra che è più vicina alla palla. Vengono prese le distanze di ogni giocatore dal punto del pallone
+        nell'immagine e viene vista la squadra più vicina alla palla dalla lista ottenuta delle distanze
 
         Args:
             Coordinate dei giocatori e coordinate della palla
@@ -129,6 +136,7 @@ def predictTeamAttacking(players_classification, img):
                 distances_ball.append((distance_2, 'team2'))
             
             team_closer_to_ball = sorted(distances_ball, key=lambda x: (x[0]))[0][1] # prendo il secondo elemento della tupla del primo elemento della lista ordinata in ordine crescente
+            
         return team_closer_to_ball  
     
     def getPercentages(area_points_team_1, area_points_team_2, n_players_team_1, n_players_team_2, max_players_near_goalkeeper, counter_team_1, counter_team_2, team_closer_to_ball):
@@ -206,6 +214,7 @@ def predictTeamAttacking(players_classification, img):
                 percent_1 = (score_team_1/total_score) * 100
                 percent_2 = (score_team_2/total_score) * 100
             case "b":
+                print("sono entrato nel case giusto")
                 players_closer_to_ball_team1 = 0
                 players_closer_to_ball_team2 = 0
                 if (team_closer_to_ball == 'team1'):
@@ -282,13 +291,13 @@ def predictTeamAttacking(players_classification, img):
     n_players_team_1 = len(players_classification[0])
     n_players_team_2 = len(players_classification[1])
 
+    
     # ottieni la squadra più vicina alla palla
     team_closer_to_ball = getTeamCloserToBall(coordinates_team_1, coordinates_team_2, coordinates_ball)
 
 
     #calcola le percentuali di attacco delle due squadre
     percent_team_1, percent_team_2 = getPercentages(area_points_team_1, area_points_team_2, n_players_team_1, n_players_team_2, max_players_near_goalkeeper, counter_team_1, counter_team_2, team_closer_to_ball)
-
 
     return percent_team_1, percent_team_2
 
@@ -300,7 +309,7 @@ def team_classification(path):
 
     model_players = YOLO("model/teamClassification/weights/best.pt")
 
-    results = model_players(path)
+    results = model_players(path) # predict player, goalkeeper and ball positions using yolo
     image = cv2.imread(path)
 
     ## get result's boxes and classes
@@ -310,6 +319,7 @@ def team_classification(path):
     def computeDistance(color1, color2):
         """
         Calcola la distanza euclidea tra due colori
+        Distanza euclidea tra due colori (r1,g1,b1) e (r2,g2,b2) = sqrt((r1-r2)^2 + (g1-g2)^2 + (b1-b2)^2)
 
         Args:
             Due colori, in questo caso un colore dominante e il colore medio della maglia del giocatore
@@ -322,7 +332,9 @@ def team_classification(path):
 
     def extract_mean_color(bounding_box_player):
         """
-        Ritorna il colore medio presente nell'immagine ritagliata rispetto al box del giocatore
+        Ritorna il colore medio presente nell'immagine ritagliata rispetto al box del giocatore. Maschera prima l'immagine
+        per il verde per isolare il giocatore dallo sfondo verde del campo e successivamente calcola il colore medio della 
+        parte rimanente
 
         Args:
             Le coordinate del box del giocatore
