@@ -66,8 +66,7 @@ def predictTeamAttacking(players_classification, img):
 
         area_points_team_1 = calculate_area(hull_points_team_1.squeeze())
         area_points_team_2 = calculate_area(hull_points_team_2.squeeze())
-        print(f"Area punti team 1: {area_points_team_1}")
-        print(f"Area punti team 2: {area_points_team_2}")
+
         return area_points_team_1, area_points_team_2
     
     def getPlayerCloserToGoalkeeper(coordinates_team_1, coordinates_team_2, coordinates_goalkeeper):
@@ -103,8 +102,7 @@ def predictTeamAttacking(players_classification, img):
                     counter_team_1 += 1
                 else:
                     counter_team_2 += 1
-            print(f"Numero di giocatori vicini al portiere team1: {counter_team_1}")
-            print(f"Numero di giocatori vicini al portiere team2: {counter_team_2}")
+
         return counter_team_1, counter_team_2, max_players_near_goalkeeper
     
     def getTeamCloserToBall(coordinates_team_1, coordinates_team_2, coordinates_ball):
@@ -131,7 +129,6 @@ def predictTeamAttacking(players_classification, img):
                 distances_ball.append((distance_2, 'team2'))
             
             team_closer_to_ball = sorted(distances_ball, key=lambda x: (x[0]))[0][1] # prendo il secondo elemento della tupla del primo elemento della lista ordinata in ordine crescente
-            print(f"Squadra più vicina alla palla: {team_closer_to_ball}")
         return team_closer_to_ball  
     
     def getPercentages(area_points_team_1, area_points_team_2, n_players_team_1, n_players_team_2, max_players_near_goalkeeper, counter_team_1, counter_team_2, team_closer_to_ball):
@@ -209,7 +206,6 @@ def predictTeamAttacking(players_classification, img):
                 percent_1 = (score_team_1/total_score) * 100
                 percent_2 = (score_team_2/total_score) * 100
             case "b":
-                print("sono entrato nel case giusto")
                 players_closer_to_ball_team1 = 0
                 players_closer_to_ball_team2 = 0
                 if (team_closer_to_ball == 'team1'):
@@ -285,9 +281,7 @@ def predictTeamAttacking(players_classification, img):
     """
     n_players_team_1 = len(players_classification[0])
     n_players_team_2 = len(players_classification[1])
-    print(f"Numero giocatori team 1: {n_players_team_1}")
-    print(f"Numero giocatori team 2: {n_players_team_2}")
-    
+
     # ottieni la squadra più vicina alla palla
     team_closer_to_ball = getTeamCloserToBall(coordinates_team_1, coordinates_team_2, coordinates_ball)
 
@@ -295,8 +289,7 @@ def predictTeamAttacking(players_classification, img):
     #calcola le percentuali di attacco delle due squadre
     percent_team_1, percent_team_2 = getPercentages(area_points_team_1, area_points_team_2, n_players_team_1, n_players_team_2, max_players_near_goalkeeper, counter_team_1, counter_team_2, team_closer_to_ball)
 
-    print(f"Percentuale di probabilità che il team 1 stia attaccando: {percent_team_1:.2f}%")
-    print(f"Percentuale di probabilità che il team 2 stia attaccando: {percent_team_2:.2f}%")
+
     return percent_team_1, percent_team_2
 
 
