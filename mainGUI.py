@@ -8,7 +8,7 @@ from PIL import Image, ImageTk, ImageEnhance
 from tkinter import font
 from offside import drawOffside
 from model.sportsfield_release.calculateHomography import calculateOptimHomography
-from model.Football_Object_Detection.team_classification import team_classification
+from model.teamClassification.team_classification import team_classification
 import time
 
 
