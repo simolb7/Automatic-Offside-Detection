@@ -1,4 +1,3 @@
-import os
 from ultralytics import YOLO
 import cv2
 import numpy as np
@@ -62,10 +61,13 @@ def predictTeamAttacking(players_classification, img):
             area = abs(area) / 2.0
             return area
 
-   
+        cv2.imshow("Aree giocatori", img_empty)
+        cv2.waitKey(0)
 
         area_points_team_1 = calculate_area(hull_points_team_1.squeeze())
         area_points_team_2 = calculate_area(hull_points_team_2.squeeze())
+        print(f"Area punti team 1: {area_points_team_1}")
+        print(f"Area punti team 2: {area_points_team_2}")
         return area_points_team_1, area_points_team_2
     
     def getPlayerCloserToGoalkeeper(coordinates_team_1, coordinates_team_2, coordinates_goalkeeper):
@@ -86,6 +88,7 @@ def predictTeamAttacking(players_classification, img):
         if existGoalkeeper:
             distances = []
 
+            # compute distance from goalkeeper for each player
             for coordinate_1 in coordinates_team_1:
                 distance_1 = cv2.norm(coordinate_1, coordinates_goalkeeper[0])
                 distances.append((distance_1, 'team1'))
@@ -100,7 +103,8 @@ def predictTeamAttacking(players_classification, img):
                     counter_team_1 += 1
                 else:
                     counter_team_2 += 1
-
+            print(f"Numero di giocatori vicini al portiere team1: {counter_team_1}")
+            print(f"Numero di giocatori vicini al portiere team2: {counter_team_2}")
         return counter_team_1, counter_team_2, max_players_near_goalkeeper
     
     def getTeamCloserToBall(coordinates_team_1, coordinates_team_2, coordinates_ball):
@@ -117,6 +121,8 @@ def predictTeamAttacking(players_classification, img):
         team_closer_to_ball = ""
         if existBall:
             distances_ball = []
+
+            #compute distance from ball for each player
             for coordinate_1 in coordinates_team_1:
                 distance_1 = cv2.norm(coordinate_1, coordinates_ball[0])
                 distances_ball.append((distance_1, 'team1'))
@@ -124,7 +130,8 @@ def predictTeamAttacking(players_classification, img):
                 distance_2 = cv2.norm(coordinate_2, coordinates_ball[0])
                 distances_ball.append((distance_2, 'team2'))
             
-            team_closer_to_ball = sorted(distances_ball, key=lambda x: (x[0]))[0][1]
+            team_closer_to_ball = sorted(distances_ball, key=lambda x: (x[0]))[0][1] # prendo il secondo elemento della tupla del primo elemento della lista ordinata in ordine crescente
+            print(f"Squadra più vicina alla palla: {team_closer_to_ball}")
         return team_closer_to_ball  
     
     def getPercentages(area_points_team_1, area_points_team_2, n_players_team_1, n_players_team_2, max_players_near_goalkeeper, counter_team_1, counter_team_2, team_closer_to_ball):
@@ -150,6 +157,8 @@ def predictTeamAttacking(players_classification, img):
         w_n_players = 0
         _case = ""
 
+
+        # imposto i pesi dati ad ogni parametro a seconda della presenza o meno di portiere e/o palla
         if max_players_near_goalkeeper > 0 and team_closer_to_ball != "": # se ci sono portiere e palla
             _case = "gb" #goalkeeper & ball
             w_ball = 0.4
@@ -171,6 +180,14 @@ def predictTeamAttacking(players_classification, img):
             w_area = 0.7
             w_n_players = 0.3
 
+        ### CALCOLO EFFETTUATO PER OTTENERE PROBABILITA' ###
+        ### Per ogni parametro normalizzo il valore per il team 1 e team 2 e moltiplico il valore di normalizzazione per il peso del parametro stesso 
+        ### Es. Parametro Aerea
+        ### Normalizzazione_area_team_1 = (aerea squadra 1) / (aerea più grande tra aerea squadra 1 e aerea squadra 2)
+        ### Peso parametro aerea rispetto al team 1 = normalizzazione_aerea_team_1 * peso parametro aerea (es. 0.3)
+        ### Probabilità totale team 1 = (somma di tutti i pesi dei parametri rispetto al team 1) / total_score * 100
+        ### total_score = somma tra lo score ottenuto dal team 1 e lo score ottenuto dal team 2
+    
         match _case:
             case "gb":
                 # normalizzazione distanza portiere giocatori delle due squadre
@@ -192,6 +209,7 @@ def predictTeamAttacking(players_classification, img):
                 percent_1 = (score_team_1/total_score) * 100
                 percent_2 = (score_team_2/total_score) * 100
             case "b":
+                print("sono entrato nel case giusto")
                 players_closer_to_ball_team1 = 0
                 players_closer_to_ball_team2 = 0
                 if (team_closer_to_ball == 'team1'):
@@ -267,6 +285,8 @@ def predictTeamAttacking(players_classification, img):
     """
     n_players_team_1 = len(players_classification[0])
     n_players_team_2 = len(players_classification[1])
+    print(f"Numero giocatori team 1: {n_players_team_1}")
+    print(f"Numero giocatori team 2: {n_players_team_2}")
     
     # ottieni la squadra più vicina alla palla
     team_closer_to_ball = getTeamCloserToBall(coordinates_team_1, coordinates_team_2, coordinates_ball)
@@ -275,6 +295,8 @@ def predictTeamAttacking(players_classification, img):
     #calcola le percentuali di attacco delle due squadre
     percent_team_1, percent_team_2 = getPercentages(area_points_team_1, area_points_team_2, n_players_team_1, n_players_team_2, max_players_near_goalkeeper, counter_team_1, counter_team_2, team_closer_to_ball)
 
+    print(f"Percentuale di probabilità che il team 1 stia attaccando: {percent_team_1:.2f}%")
+    print(f"Percentuale di probabilità che il team 2 stia attaccando: {percent_team_2:.2f}%")
     return percent_team_1, percent_team_2
 
 
@@ -283,19 +305,38 @@ def predictTeamAttacking(players_classification, img):
 
 def team_classification(path):
 
-    model_players = YOLO("model/Football_Object_Detection/weights/best.pt")
+    model_players = YOLO("C:/Users/tbern/Football-Object-Detection-main/weights/best.pt")
 
     results = model_players(path)
     image = cv2.imread(path)
 
+    ## get result's boxes and classes
     boxes, classes = results[0].boxes.xyxy.tolist(), results[0].boxes.cls.tolist()
 
 
     def computeDistance(color1, color2):
+        """
+        Calcola la distanza euclidea tra due colori
+
+        Args:
+            Due colori, in questo caso un colore dominante e il colore medio della maglia del giocatore
+        Returns:
+            La distanza calcolata
+
+        """
         distance = math.sqrt((color2[0]-color1[0])**2 + (color2[1]-color1[1])**2 + (color2[2]-color1[2])**2)
         return distance
 
     def extract_mean_color(bounding_box_player):
+        """
+        Ritorna il colore medio presente nell'immagine ritagliata rispetto al box del giocatore
+
+        Args:
+            Le coordinate del box del giocatore
+        
+        Returns:
+            Colore medio
+        """
         # mask green
         bounding_box_hsv = cv2.cvtColor(bounding_box_player, cv2.COLOR_BGR2HSV)
         mask_green = cv2.inRange(bounding_box_hsv, (36,25,25), (70,255,255))
@@ -308,6 +349,15 @@ def team_classification(path):
         return mean_color[:3]
         
     def get_dominant_colors(team_colors):
+        """
+        Calcola i due colori dominanti presenti nell'immagine
+
+        Args:
+            Lista con tutti i colori medi ottenuti dalle maglie di ogni calciatore
+
+        Returns:
+            Un oggetto KMeans che contiene i due colori dominanti presenti
+        """
         colors_kmeans = KMeans(n_clusters=2)
         colors_kmeans.fit(team_colors)
         return colors_kmeans
@@ -318,27 +368,28 @@ def team_classification(path):
     team_colors = []
     ball_box = []
     for box, cls in zip(boxes, classes):
-        if round(cls) == 0:
+        if round(cls) == 0: # classe 0 = player
             x1,y1,x2,y2 = map(int, box)
             players_boxes.append([x1,y1,x2,y2])
             player = image[y1:y2, x1:x2]
             color = extract_mean_color(player)
             team_colors.append(color)
-        if round(cls) == 1:
+        if round(cls) == 1: # classe 1 = goalkeeper
             x1,y1,x2,y2 = map(int, box)
             goalkeeper_box.append([x1,y1,x2,y2])
-        if round(cls) == 2:
+        if round(cls) == 2: # classe 2 = ball
             x1,y1,x2,y2 = map(int, box)
             ball_box.append([x1,y1,x2,y2])
 
     
     kmeans_colors = get_dominant_colors(team_colors)
-    dominant_colors = kmeans_colors.cluster_centers_.astype(int)
+    dominant_colors = kmeans_colors.cluster_centers_.astype(int) # get cluster centers to obtain dominant colors
     color_classification = dict()
     team_1 = 0
     team_2 = 1
     goalkeeper = 'goalkeeper'
     ball = 'ball'
+    # create classification for dominant colors
     for color in dominant_colors:
         if team_1 in color_classification:
             color_classification[team_2] = color
@@ -348,8 +399,8 @@ def team_classification(path):
     players_classification = dict()
     players_classification[team_1] = []
     players_classification[team_2] = []
-    if len(goalkeeper_box) > 0: players_classification[goalkeeper] = goalkeeper_box
-    if len(ball_box) > 0: players_classification[ball] = ball_box
+    if len(goalkeeper_box) > 0: players_classification[goalkeeper] = goalkeeper_box # if goalkeepere exist, insert its box in classification
+    if len(ball_box) > 0: players_classification[ball] = ball_box # if ball exist insert its box in classification
     for i, color in enumerate(team_colors):
         distance_team_1 = computeDistance(color, color_classification[team_1])
         distance_team_2 = computeDistance(color, color_classification[team_2])
@@ -361,7 +412,6 @@ def team_classification(path):
     """
     Calcolo squadra che sta attaccando
     """
-
     percent_team_1, percent_team_2 = predictTeamAttacking(players_classification, image)
 
     if percent_team_1 > percent_team_2:
@@ -376,30 +426,27 @@ def team_classification(path):
         color_classification['Team A'] = color_classification.pop(team_2)
         color_classification['Team B'] = color_classification.pop(team_1)
     
-
+    
     def annotate_image(players_classification):
+        """
+        Disegna l'immagine dividendo le squadre in due team differenti, team A e team B
 
-        players_team_A = players_classification['Team A'] 
+        Args:
+            Dizionario con la divisione dei giocatori per squadra e la relative box
+        
+        
+        """
+        players_team_A = players_classification['Team A']
         for player in players_team_A:
             x1,y1,x2,y2 = player
             cv2.rectangle(image, (x1,y1), (x2,y2), color=(0,0,255), thickness=2)
-            cv2.putText(image, "Team A", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,255),2)
-        players_team_B = players_classification['Team B']
+            cv2.putText(image, "Team A", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,0.4, (0,0,255),2)
+        players_team_B = players_classification['Team B'] 
         for player in players_team_B:
             x1,y1,x2,y2 = player
             cv2.rectangle(image, (x1,y1), (x2,y2), color=(255,0,0), thickness=2)
-            cv2.putText(image, "Team B", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,1, (255,0,0),2)
-        if len(goalkeeper_box) > 0:
-            x1,y1,x2,y2 = players_classification[goalkeeper][0]
-            cv2.rectangle(image, (x1,y1), (x2,y2), color=(0,0,0), thickness=2) 
-            cv2.putText(image, "GK", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,0),2)
-        if len(ball_box) > 0:
-            x1,y1,x2,y2 = players_classification[ball][0]
-            cv2.rectangle(image, (x1,y1), (x2,y2), color=(0,0,0), thickness=2) 
-            cv2.putText(image, "Ball", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,0),2)
-        os.chdir("result")
-        cv2.imwrite("teamClassification.png", image)
-        os.chdir("..")
+            cv2.putText(image, "Team B", (x1-30, y1-10),cv2.FONT_HERSHEY_COMPLEX,0.4, (255,0,0),2)
+        cv2.imwrite("C:/Users/tbern/Desktop/AI-lab/9.png", image)
 
     annotate_image(players_classification)
 
