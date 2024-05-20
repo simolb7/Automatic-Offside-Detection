@@ -67,20 +67,16 @@ def putPng(image, tag, position) -> None:
     # Separa i canali RGBA
         b, g, r, a = cv2.split(tag)
 
-        print('position', position)
-        
         # Crea una maschera e la sua inversa utilizzando il canale alfa
         maschera = cv2.merge([a, a, a])
         maschera_inversa = cv2.bitwise_not(maschera)
         
         # Definisci le dimensioni dell'immagine da sovrapporre
         altezza_sovrapposta, larghezza_sovrapposta = tag.shape[:2]
-        print('h e 2: ',altezza_sovrapposta, larghezza_sovrapposta)
-        
+
         # Specifica la posizione (x, y) dove vuoi inserire l'immagine sovrapposta
         x,y = position[0], position[1]
-        print('valori: ', x,y)
-   
+
         # Crea la ROI sull'immagine di sfondo
         roi = image[y:y+altezza_sovrapposta, x:x+larghezza_sovrapposta]
         
@@ -183,7 +179,7 @@ def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homogr
                 #CAMBIARE FONT
                 mediax = round(((attacker[i][2]-attacker[i][0])/2)+attacker[i][0])
 
-                putPng(image, offside_tag, [mediax-65,attacker[i][1]-53])
+                putPng(image, offside_tag, [mediax-65,attacker[i][1]-30])
 
 
     if side == 'right':
@@ -198,7 +194,7 @@ def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homogr
             if p[0] > last_def[0]:
                 offside.append(p)
                 #CAMBIARE FONT
-                print('posizione: ',attacker[i][0], attacker[i][1], attacker[i][2], attacker[i][3])
+            
                 #image[ attacker[i][1]-10:attacker[i][1]-10+h_tag, attacker[i][0]-30:attacker[i][0]-30+w_tag] = resizeTag
                 #cv2.rectangle(image, (attacker[i][0], attacker[i][1]), (attacker[i][2], attacker[i][3]), color=(0,255,255), thickness=2) 
                 #cv2.putText(image, "Offside", (attacker[i][0]-30, attacker[i][1]-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,0),2)
@@ -207,10 +203,12 @@ def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homogr
 
                 mediax = round(((attacker[i][2]-attacker[i][0])/2)+attacker[i][0])
 
-                putPng(image, offside_tag, [mediax-65,attacker[i][1]-53])
+                putPng(image, offside_tag, [mediax-65,attacker[i][1]-30])
 
 
     for p in attacker2D:
+        if p in offside:
+            cv2.circle(pitch2D, (int(p[0]), int(p[1])), 12, (0,255,255), -1)
         cv2.circle(pitch2D, (int(p[0]), int(p[1])), 10, c_att, -1)
     for p in defender2D:
         cv2.circle(pitch2D, (int(p[0]), int(p[1])), 10, c_def, -1)

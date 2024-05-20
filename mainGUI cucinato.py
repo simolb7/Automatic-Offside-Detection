@@ -52,9 +52,9 @@ def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homogr
     #provax, provay = round(attacker[i][0]+attacker[i][2]/2),  round(attacker[i][1]+attacker[i][3]/2)
     print(round(((1207-1159)/2)+1159))
     mediax = round(((1249-1170)/2)+1170)
-    putPng(image, offside_tag, [mediax-65,445-53])
+    putPng(image, offside_tag, [mediax-65,445-30])
     mediax = round(((1086-1036)/2)+1036)
-    putPng(image, offside_tag, [mediax-65,399-53])
+    putPng(image, offside_tag, [mediax-65,399-30])
 
 
     cv2.imshow('image', image)
