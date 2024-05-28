@@ -6,7 +6,7 @@ import model.sportsfield_release.utils.image_utils as utils
 import model.sportsfield_release.utils.warp as warp
 
 
-def convertPoint3Dto2D(homography: torch.Tensor, p: list, w: int, h: int) -> list[float]:
+def convertPoint3Dto2D(homography: torch.Tensor, p: list[int], w: int, h: int) -> list[float]:
     '''Funzione che converte un punto sull'immagine 3D al punto sul campo 2D.
     La funzione prende in input:
     - Il tensore di omografia;
@@ -33,7 +33,7 @@ def convertPoint3Dto2D(homography: torch.Tensor, p: list, w: int, h: int) -> lis
 
 
 
-def convertPoint2Dto3D(homography: torch.Tensor, p: list, w: int, h: int) -> list[float]:
+def convertPoint2Dto3D(homography: torch.Tensor, p: list[int], w: int, h: int) -> list[float]:
     '''Funzione che converte un punto sul campo 2D ad un punto sull'immagine 3D.
     La funzione prende in input:
     - Il tensore di omografia invertita;
