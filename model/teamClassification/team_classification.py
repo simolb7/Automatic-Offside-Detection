@@ -14,7 +14,7 @@ def predictTeamAttacking(players_classification, img):
 
         """
         Calcola l'area formata dai giocatori più esterni di tutte le due squadre. Per ogni squadra vengono presi tutti i 
-        punti rappresentanti i giocatori e ne viene calcola l'inviluppo convesso per trovare quelli più esterni. Unendoù
+        punti rappresentanti i giocatori e ne viene calcola l'inviluppo convesso per trovare quelli più esterni. Unendo
         tutti i punti più esterni viene tracciata un'aerea della quale viene calcolata la superficie.
         
         Args:
@@ -76,8 +76,8 @@ def predictTeamAttacking(players_classification, img):
     
     def getPlayerCloserToGoalkeeper(coordinates_team_1, coordinates_team_2, coordinates_goalkeeper):
         """
-        Calcola il numero dei giocatori per ogni squadra che sono più vicini al portiere ( se il portiere esiste). Per ogni giocatore
-        viene calcolata la distanza dal punto rappresentante il portiere nell'immagine. Vengono presi i x giocatori vicini al portiere
+        Calcola il numero dei giocatori per ogni squadra che sono più vicini al portiere ( se il portiere è presente). Per ogni giocatore
+        viene calcolata la distanza dal punto rappresentante il portiere nell'immagine. Vengono presi gli x giocatori vicini al portiere
         e vengono contati il numero di giocatori per ogni squadra in questi x giocatori
 
         Args:
