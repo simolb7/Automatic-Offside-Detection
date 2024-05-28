@@ -2,7 +2,8 @@ import cv2
 import torch
 import numpy as np
 import os
-
+import model.sportsfield_release.utils.image_utils as utils
+import model.sportsfield_release.utils.warp as warp
 
 
 def convertPoint3Dto2D(homography: torch.Tensor, p: list, w: int, h: int) -> list[float]:
@@ -58,7 +59,38 @@ def convertPoint2Dto3D(homography: torch.Tensor, p: list, w: int, h: int) -> lis
     return [x_warped, y_warped]
 
 
-def drawOffside(pathImage: str, homography:torch.Tensor, defender:list[list[int]] = 0, attacker: list[list[int]]=0, goalkeeper: list[int]=0 ) -> int:
+def putPng(image, tag, position) -> None:
+    if tag.shape[2] == 4:
+    # Separa i canali RGBA
+        b, g, r, a = cv2.split(tag)
+
+        # Crea una maschera e la sua inversa utilizzando il canale alfa
+        maschera = cv2.merge([a, a, a])
+        maschera_inversa = cv2.bitwise_not(maschera)
+        
+        # Definisci le dimensioni dell'immagine da sovrapporre
+        altezza_sovrapposta, larghezza_sovrapposta = tag.shape[:2]
+
+        # Specifica la posizione (x, y) dove vuoi inserire l'immagine sovrapposta
+        x,y = position[0], position[1]
+
+        # Crea la ROI sull'immagine di sfondo
+        roi = image[y:y+altezza_sovrapposta, x:x+larghezza_sovrapposta]
+        
+        # Usa la maschera inversa per oscurare l'area della ROI nel sfondo
+        sfondo_bg = cv2.bitwise_and(roi, roi, mask=maschera_inversa[:, :, 0])
+        
+        # Usa la maschera per estrarre la parte dell'immagine sovrapposta
+        sovrapposta_fg = cv2.bitwise_and(tag[:, :, :3], tag[:, :, :3], mask=maschera[:, :, 0])
+        
+        # Combina lo sfondo e l'immagine sovrapposta
+        combinata = cv2.add(sfondo_bg, sovrapposta_fg)
+        
+        # Inserisci la combinazione nella ROI del sfondo
+        image[y:y+altezza_sovrapposta, x:x+larghezza_sovrapposta] = combinata
+
+
+def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homography:torch.Tensor, defender:list[list[int]], attacker: list[list[int]], goalkeeper: list[list[int]]=0) -> int:
     '''Funzione che calcola e disegna sull'immagine 2D e 3D il fuorigioco e le posizioni dei giocatori.
     La funzione prende in input:
     - Il path dell'immagine 3D;
@@ -69,99 +101,106 @@ def drawOffside(pathImage: str, homography:torch.Tensor, defender:list[list[int]
     La funzione ritorna in output il numero di attaccanti in fuorigioco e salva nella cartella result le immagini lavorate.'''
     image = cv2.imread(pathImage)
     pitch2D = cv2.imread("model/sportsfield_release/data/world_cup_template.png")
-    goalkeeper = [741, 549]
-    ''''
-    homography = torch.tensor([[[ 0.2940,  0.0238, -0.3597],
-            [-0.2042,  1.1472,  0.1179],
-            [ 0.0560,  0.9439,  1.0000]]])
-    '''
-    defender = [[1089, 745], [1195, 704], [1496, 579], [892, 881]]
-    attacker = [[833, 785], [1216, 719]]
+
+    offside_tag = cv2.imread('GUI/src/images/resizedTag.png',  cv2.IMREAD_UNCHANGED)
 
     '''Calcola altezza e larghezza della foto'''
     w = len(image[0])
     h = len(image)
+    side = ''
+    offside = []
+    attacker2D = []
+    defender2D = []
 
-    '''Calcola la posizione del portiere e da questa deriviamo il lato dell'attacco (Nelle immagini delle azioni è presente sempre un solo portiere)'''
-    p_goalkeeper = convertPoint3Dto2D(homography, goalkeeper, w, h)
-    if p_goalkeeper[0] > 1050/2:
-        side = 'right'
+    if team == 'A':
+        c_def = colors['Team B'].tolist()
+        c_att = colors['Team A'].tolist()
     else:
-        side = 'left'
-  
+        c_def = colors['Team A'].tolist()
+        c_att = colors['Team B'].tolist()
+ 
+
+    '''Calcola le posizioni dei giocatori in 2D'''
+    for p in attacker:
+        p_att = convertPoint3Dto2D(homography, [round((abs(p[0]+p[2])/2)), (p[3])], w, h)
+        attacker2D.append(p_att)
+        
+    for p in defender:
+        p_def = convertPoint3Dto2D(homography, [round((abs(p[0]+p[2])/2)), (p[3])], w, h)
+        defender2D.append(p_def)
+        
+    if goalkeeper != 0:
+        p_gk = convertPoint3Dto2D(homography, [round((abs(goalkeeper[0][2]+goalkeeper[0][0])/2)), (goalkeeper[0][3])], w, h)
+        if p_gk[0] < 1050//2:
+            side = 'left'
+        else:
+            side = 'right'
+        if team == 'B':
+            cv2.circle(pitch2D, (int(p_gk[0]), int(p_gk[1])), 10, c_def, -1)
+        if team == 'A':
+            cv2.circle(pitch2D, (int(p_gk[0]), int(p_gk[1])), 10, c_def, -1)
+    else:
+        c_left, c_right = 0,0
+        for p in defender2D:
+            if p[0] < 1050//2:
+                c_left += 1
+            else:
+                c_right += 1
+        for p in attacker2D:
+            if p[0] < 1050//2:
+                c_left += 1
+            else:
+                c_right += 1
+        if c_left > c_right:
+            side = 'left'
+        else:   
+            side = 'right'
+
+    '''Disegna la linea del fuorigioco e calcola i giocatori in fuorigioco'''
+    if side == 'left':
+        last_def = min(defender2D, key=lambda x: x[0])
+        cv2.line(pitch2D, (int(last_def[0]), 0), (int(last_def[0]), 680), (0,255,255), 2)
+        invexHomo = torch.inverse(homography)
+        p1 = convertPoint2Dto3D(invexHomo, [last_def[0], 0], w, h)
+        p2 = convertPoint2Dto3D(invexHomo, [last_def[0], 680], w, h)
+        cv2.line(image, (int(p1[0]), int(p1[1])), (int(p2[0]), int(p2[1])), (0,255,255), 3)
+
+        for i, p in enumerate(attacker2D):
+            if p[0] < last_def[0]:
+                offside.append(p)
+                #CAMBIARE FONT
+                mediax = round(((attacker[i][2]-attacker[i][0])/2)+attacker[i][0])
+
+                putPng(image, offside_tag, [mediax-65,attacker[i][1]-30])
+
+
     if side == 'right':
-        d = []
-        a = []
-        offside = []
-        inside = []
-        '''Conversione dei punti dei difensori sull'immagine 2D per agevolare la ricerca dell'ultimo difensore, che viene fatta attraverso max()
-        nel caso in cui si attacchi a destra.
-        Una volta trovato viene usata la cordinata x della sua posizione per tracciare la linea sull'immagine 2D e usando la matrice di omografia inversa
-        vengono trovati i corrispettivi punti sull'immagine 3D e disegnata la linea.'''
-        for p in defender:
-            d_converted = convertPoint3Dto2D(homography, p, w, h)
-            d.append(d_converted)
-            image = cv2.circle(image, p, 0, (0, 0, 255), 10)
-            pitch2D = cv2.circle(pitch2D, (int(d_converted[0]), int(d_converted[1])), 0, (0, 0, 255), 10)
-        offside2D = max(d)
-        p1_2D = [offside2D[0], 0]
-        p2_2D = [offside2D[0], 680]
-        pitch2D = cv2.line(pitch2D, (int(p1_2D[0]), int(p1_2D[1])), (int(p2_2D[0]), int(p2_2D[1])), (0, 255, 255), 1)
-        inver_homography = torch.inverse(homography)
-        p1_3D = convertPoint2Dto3D(inver_homography, p1_2D, w, h)
-        p2_3D = convertPoint2Dto3D(inver_homography, p2_2D, w, h)
-        image = cv2.line(image, (int(p1_3D[0]), int(p1_3D[1])), (int(p2_3D[0]), int(p2_3D[1])), (0, 255, 255), 3)
-        '''Conversione dei punti dei difensori sull'immagine 2D per agevolare la ricerca degli attaccanti in fuorigioco. Per l'attacco a destra sono tutti
-        quelli la cui coordinata x è maggiore della coordinata x dell'ultimo difensore. Vengono quindi disegnati sull'immagine 2D gli attaccanti.'''
-        for p in attacker:
-            a_converted = convertPoint3Dto2D(homography, p, w, h)
-            a.append(a_converted)
-            image = cv2.circle(image, p, 0, (255, 0, 0), 10)
-            pitch2D = cv2.circle(pitch2D, (int(a_converted[0]), int(a_converted[1])), 0, (255, 0, 0), 10)
-        for p in a:
-            if p[0] > offside2D[0]:
-                offside.append(p)
-                pitch2D = cv2.circle(pitch2D, (int(p[0]), int(p[1])), 0, (0,0,0), 5)
-            else:
-                inside.append(p)
+        last_def = max(defender2D, key=lambda x: x[0])
+        cv2.line(pitch2D, (int(last_def[0]), 0), (int(last_def[0]), 680), (0,255,255), 2)
+        invexHomo = torch.inverse(homography)
+        p1 = convertPoint2Dto3D(invexHomo, [last_def[0], 0], w, h)
+        p2 = convertPoint2Dto3D(invexHomo, [last_def[0], 680], w, h)
+        cv2.line(image, (int(p1[0]), int(p1[1])), (int(p2[0]), int(p2[1])), (0,255,255), 3)
 
-    elif side == 'left':
-        d = []
-        a = []
-        offside = []
-        inside = []
-        '''Conversione dei punti dei difensori sull 'immagine 2D per agevolare la ricerca dell'ultimo difensore, che viene fatta attraverso min()
-        nel caso in cui si attacchi a sinistra.
-        Una volta trovato viene usata la cordinata x della sua posizione per tracciare la linea sull'immagine 2D e usando la matrice di omografia inversa
-        vengono trovati i corrispettivi punti sull'immagine 3D e disegnata la linea.'''
-        for p in defender:
-            d_converted = convertPoint3Dto2D(homography, p, w, h)
-            d.append(d_converted)
-            image = cv2.circle(image, p, 0, (0, 0, 255), 10)
-            pitch2D = cv2.circle(pitch2D, (int(d_converted[0]), int(d_converted[1])), 0, (0, 0, 255), 10)
-        offside2D = min(d)
-        p1_2D = [offside2D[0], 0]
-        p2_2D = [offside2D[0], 680]
-        pitch2D = cv2.line(pitch2D, (int(p1_2D[0]), int(p1_2D[1])), (int(p2_2D[0]), int(p2_2D[1])), (0, 255, 255), 1)
-        inver_homography = torch.inverse(homography)
-        p1_3D = convertPoint2Dto3D(inver_homography, p1_2D, w, h)
-        p2_3D = convertPoint2Dto3D(inver_homography, p2_2D, w, h)
-        image = cv2.line(image, (int(p1_3D[0]), int(p1_3D[1])), (int(p2_3D[0]), int(p2_3D[1])), (0, 255, 255), 3)
-        '''Conversione dei punti dei difensori sull'immagine 2D per agevolare la ricerca degli attaccanti in fuorigioco. Per l'attacco a sinistra sono tutti
-        quelli la cui coordinata x è minore della coordinata x dell'ultimo difensore. Vengono quindi disegnati sull'immagine 2D gli attaccanti.'''
-        for p in attacker:
-            a_converted = convertPoint3Dto2D(homography, p, w, h)
-            a.append(a_converted)
-            image = cv2.circle(image, p, 0, (255, 0, 0), 10)
-            pitch2D = cv2.circle(pitch2D, (int(a_converted[0]), int(a_converted[1])), 0, (255, 0, 0), 10)
-        for p in a:
-            if p[0] < offside2D[0]:
+        for i, p in enumerate(attacker2D):
+            if p[0] > last_def[0]:
                 offside.append(p)
-                pitch2D = cv2.circle(pitch2D, (int(p[0]), int(p[1])), 0, (0,0,0), 5)
-            else:
-                inside.append(p)
+                mediax = round(((attacker[i][2]-attacker[i][0])/2)+attacker[i][0])
 
+                putPng(image, offside_tag, [mediax-65,attacker[i][1]-30])
+
+
+    for p in attacker2D:
+        if p in offside:
+            cv2.circle(pitch2D, (int(p[0]), int(p[1])), 12, (0,255,255), -1)
+        cv2.circle(pitch2D, (int(p[0]), int(p[1])), 10, c_att, -1)
+    for p in defender2D:
+        cv2.circle(pitch2D, (int(p[0]), int(p[1])), 10, c_def, -1)
+
+
+  
     '''Viene calcolato il numero degli attaccanti in fuorigioco e salvate le immagini lavorate nella cartella result.'''
+
     playerOffside = len(offside)
 
     os.chdir('result')

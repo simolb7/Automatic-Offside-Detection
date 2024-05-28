@@ -1,35 +1,45 @@
+import time
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import PhotoImage, filedialog
 from PIL import ImageTk, Image
 from tkinter import Canvas, Label
 import os
 from PIL import Image, ImageTk, ImageEnhance
+from tkinter import font
 from offside import drawOffside
 from model.sportsfield_release.calculateHomography import calculateOptimHomography
+from model.teamClassification.team_classification import team_classification
+import time
+
 
 def reduce_brightness(image, factor=0.7):
     enhancer = ImageEnhance.Brightness(image)
     return enhancer.enhance(factor)
-
 
 def seleziona_immagine():
     file_path = filedialog.askopenfilename()
     if file_path:
         impostazioni_preprocessamento(file_path)
 
-def visualizza_immagine(file_path, team):
+def visualizza_immagine(file_path, team, dictPlayers, colors):
 
     background = Image.open("GUI/src/images/result.jpg")
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
-    canvas.create_image(0, 0, anchor=tk.NW, image=background)  
-
-    #DA SPOSTARE NELLA SCHERMATA DI CARICAMENTO (FINO A DRAWOFFSIDE)
-
+    canvas.create_image(0, 0, anchor=tk.NW, image=background)
+    
     homography = calculateOptimHomography(file_path)
-
-    playersOffside = drawOffside(file_path, homography)
+    if 'goalkeeper' in dictPlayers.keys():
+        if team != "A":
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team A'], dictPlayers['Team B'], dictPlayers['goalkeeper'])
+        else:
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team B'], dictPlayers['Team A'], dictPlayers['goalkeeper'])
+    else:
+        if team != "A":
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team A'], dictPlayers['Team B'])
+        else:
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team B'], dictPlayers['Team A'])
 
     img = Image.open('result/result3D.jpg')
     img = img.resize((753, 424))
@@ -38,10 +48,13 @@ def visualizza_immagine(file_path, team):
     canvas.create_image(0, 159, anchor=tk.NW, image=img)
     
     img2 = Image.open("result/result2D.png")
-    img2 = img2.resize((512, 300))
+    x = 1050
+    y = 680
+    res = 2.4
+    img2 = img2.resize((int(x/res), int(y/res)))
     img2 = ImageTk.PhotoImage(img2)
     canvas.img2 = img2
-    canvas.create_image(769, 159, anchor=tk.NW, image=img2)
+    canvas.create_image(810, 168, anchor=tk.NW, image=img2)
 
     restart_button_img = Image.open("GUI/src/elements/restart_button.png")
     restart_button_img_resized = restart_button_img.resize((200, 50))
@@ -49,11 +62,7 @@ def visualizza_immagine(file_path, team):
     canvas.restart_button = restart_button_photo
     canvas.restart_button_img = restart_button_img_resized
     
-    restart_button = canvas.create_image(150, 75, image=restart_button_photo)
-
-    team_label = Label(root, text=f"Team {team} in attacco", font=('Helvetica', 12, 'bold'), fg='violet')
-    canvas.create_window(640, 50, window=team_label)
-
+    restart_button = canvas.create_image(640, 650, image=restart_button_photo)
 
     canvas.tag_bind(restart_button, '<Button-1>', lambda event: start_view())
     
@@ -69,10 +78,40 @@ def visualizza_immagine(file_path, team):
     canvas.tag_bind(restart_button, '<Enter>', on_enter_restart)
     canvas.tag_bind(restart_button, '<Leave>', on_leave_restart)
 
+    if offside == 0:
+        players_button_img = Image.open(f"GUI/src/images/no_offside.png")
+    else:
+        players_button_img = Image.open(f"GUI/src/images/{offside}.png")
+
+    players_button_photo = ImageTk.PhotoImage(players_button_img)
+    canvas.players_button = players_button_photo
+    canvas.players_button_img = players_button_img   
+    canvas.create_image(1140, 530, image=players_button_photo)
+
+    team_button_img = Image.open(f"GUI/src/images/{team}.png")
+    team_button_photo = ImageTk.PhotoImage(team_button_img)
+    canvas.team_button = team_button_photo
+    canvas.team_button_img = team_button_img
+    
+    canvas.create_image(900, 530, image=team_button_photo)
+
+def schermata_di_caricamento(file_path, team, dictPlayers, colors):
+    canvas.delete("all")
+    background = Image.open('GUI/src/images/waiting.jpg')
+    background = background.resize((1280, 720))
+    background = ImageTk.PhotoImage(background)
+    canvas.background = background
+    canvas.create_image(0, 0, anchor=tk.NW, image=background)
+
+    root.after(10, visualizza_immagine, file_path, team, dictPlayers, colors)
+
 def start_view():
     for widget in root.winfo_children():
-        if isinstance(widget, tk.Label) and widget.cget("text").startswith("Team "):
-            widget.destroy()
+        if isinstance(widget, tk.Label):
+            if widget["text"].startswith("Team ") or widget["text"].startswith("Giocatori "):
+                widget.destroy()
+
+
     background = Image.open('GUI/src/images/start.jpg')
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
@@ -102,7 +141,7 @@ def start_view():
 
 def impostazioni_preprocessamento(file_path):
     global team
-    team = "scroto"  # Valore iniziale del team
+    team = "A"  # Valore iniziale del team
 
     background = Image.open("GUI/src/images/preprocess.jpg")
     background = background.resize((1280, 720))
@@ -110,12 +149,15 @@ def impostazioni_preprocessamento(file_path):
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)  
 
+    dictPlayers,colors,_  = team_classification(file_path)
+    img_path = 'result/teamClassification.png'
+
     imgX = 727
-    img = Image.open(file_path)
+    img = Image.open(img_path)
     img = img.resize((imgX, int((imgX/16) * 9)))
     img = ImageTk.PhotoImage(img)
     canvas.img = img
-    canvas.create_image(640-(imgX//2), 40, anchor=tk.NW, image=img)
+    canvas.create_image(640-(imgX//2), 62, anchor=tk.NW, image=img)
     
     teamA_button_img = Image.open("GUI/src/elements/teamA_button.png")
     teamA_button_img_resized = teamA_button_img.resize((160, 40))
@@ -138,7 +180,7 @@ def impostazioni_preprocessamento(file_path):
     canvas.process_button_img = process_button_img_resized
     
     button_space = 90
-    button_height = 550
+    button_height = 560
     
     teamA_button = canvas.create_image(640-button_space, button_height, image=teamA_button_photo)
     teamB_button = canvas.create_image(640+button_space, button_height, image=teamB_button_photo)
@@ -163,7 +205,7 @@ def impostazioni_preprocessamento(file_path):
             canvas.teamA_button_photo = darkened_teamA
 
     def on_enter_process(event):
-        brightened_image = reduce_brightness(canvas.process_button_img, 1.2)
+        brightened_image = reduce_brightness(canvas.process_button_img, 0.8)
         brightened_photo = ImageTk.PhotoImage(brightened_image)
         canvas.itemconfig(process_button, image=brightened_photo)
         canvas.current_button_image = brightened_photo
@@ -173,10 +215,9 @@ def impostazioni_preprocessamento(file_path):
 
     canvas.tag_bind(teamA_button, '<Button-1>', lambda event: scegli_team("A"))
     canvas.tag_bind(teamB_button, '<Button-1>', lambda event: scegli_team("B"))
-    canvas.tag_bind(process_button, '<Button-1>', lambda event: visualizza_immagine(file_path, team))
+    canvas.tag_bind(process_button, '<Button-1>', lambda event: schermata_di_caricamento(file_path, team, dictPlayers, colors))
     canvas.tag_bind(process_button, '<Enter>', on_enter_process)
     canvas.tag_bind(process_button, '<Leave>', on_leave_process)
-
 
 def avvia_processo():
     seleziona_immagine()

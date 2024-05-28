@@ -6,63 +6,53 @@ from tkinter import Canvas, Label
 import os
 from PIL import Image, ImageTk, ImageEnhance
 from tkinter import font
-import tkinter as tk
-import tkinter as tk
-import _thread
-import pyglet
+from offside import drawOffside
+from model.sportsfield_release.calculateHomography import calculateOptimHomography
+from model.teamClassification.team_classification import team_classification
+import time
 
-class gifplay:
-
-        def __init__(self,label,gif_file_path,delay):
-            self.frame=[]
-            i=0
-            while 1:
-                try:
-                    image=PhotoImage(file = gif_file_path, format="gif -index "+str(i))
-                    self.frame.append(image)
-                    i=i+1
-                except:
-                    break
-            print(i)
-            self.totalFrames=i-1
-            self.delay=delay
-            self.labelspace=label
-            self.labelspace.image=self.frame[0]
-
-        def play(self):
-            _thread.start_new_thread(self.infinite,())
-
-        def infinite(self):
-            i=0
-            while 1:
-                self.labelspace.configure(image=self.frame[i])
-                i=(i+1)%self.totalFrames
-                time.sleep(self.delay)
-
+# Function to reduce the brightness of the buttons when the mouse hovers over them
 def reduce_brightness(image, factor=0.7):
     enhancer = ImageEnhance.Brightness(image)
     return enhancer.enhance(factor)
 
-
-def seleziona_immagine():
+# Function to select an image to process
+def select_image():
     file_path = filedialog.askopenfilename()
     if file_path:
-        impostazioni_preprocessamento(file_path)
+        preprocess_view(file_path)
 
-def visualizza_immagine(file_path, team, players):
-    background = Image.open("Automatic Offside Recognition GUI/src/images/result.jpg")
+# Function to display the final view showing the processed images (real image and 2D pitch)
+def result_view(file_path, team, dictPlayers, colors):
+    # Create background image
+    background = Image.open("GUI/src/images/result.jpg")
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
-    canvas.create_image(0, 0, anchor=tk.NW, image=background)  
+    canvas.create_image(0, 0, anchor=tk.NW, image=background)
 
-    img = Image.open(file_path)
+    # Calculate homography and draw offside
+    homography = calculateOptimHomography(file_path)
+    if 'goalkeeper' in dictPlayers.keys():
+        if team != "A":
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team A'], dictPlayers['Team B'], dictPlayers['goalkeeper'])
+        else:
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team B'], dictPlayers['Team A'], dictPlayers['goalkeeper'])
+    else:
+        if team != "A":
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team A'], dictPlayers['Team B'])
+        else:
+            offside = drawOffside(file_path, team, colors, homography, dictPlayers['Team B'], dictPlayers['Team A'])
+
+    # Display the 3D result image
+    img = Image.open('result/result3D.jpg')
     img = img.resize((753, 424))
     img = ImageTk.PhotoImage(img)
     canvas.img = img
     canvas.create_image(0, 159, anchor=tk.NW, image=img)
-    
-    img2 = Image.open("Automatic Offside Recognition GUI/src/offside/pitch2D.png")
+
+    # Display the 2D result image
+    img2 = Image.open("result/result2D.png")
     x = 1050
     y = 680
     res = 2.4
@@ -71,16 +61,16 @@ def visualizza_immagine(file_path, team, players):
     canvas.img2 = img2
     canvas.create_image(810, 168, anchor=tk.NW, image=img2)
 
-    restart_button_img = Image.open("Automatic Offside Recognition GUI/src/elements/restart_button.png")
+    # Create and configure restart button
+    restart_button_img = Image.open("GUI/src/elements/restart_button.png")
     restart_button_img_resized = restart_button_img.resize((200, 50))
     restart_button_photo = ImageTk.PhotoImage(restart_button_img_resized)
     canvas.restart_button = restart_button_photo
     canvas.restart_button_img = restart_button_img_resized
     
     restart_button = canvas.create_image(640, 650, image=restart_button_photo)
-
     canvas.tag_bind(restart_button, '<Button-1>', lambda event: start_view())
-    
+
     def on_enter_restart(event):
         brightened_image = reduce_brightness(canvas.restart_button_img)
         brightened_photo = ImageTk.PhotoImage(brightened_image)
@@ -93,99 +83,52 @@ def visualizza_immagine(file_path, team, players):
     canvas.tag_bind(restart_button, '<Enter>', on_enter_restart)
     canvas.tag_bind(restart_button, '<Leave>', on_leave_restart)
 
-    if players == 0:
-        players_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/no_offside.png")
+    # Display offside result image
+    if offside == 0:
+        players_button_img = Image.open(f"GUI/src/images/no_offside.png")
     else:
-        players_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{players}.png")
-    
+        players_button_img = Image.open(f"GUI/src/images/{offside}.png")
+
     players_button_photo = ImageTk.PhotoImage(players_button_img)
     canvas.players_button = players_button_photo
     canvas.players_button_img = players_button_img   
     canvas.create_image(1140, 530, image=players_button_photo)
 
-    team_button_img = Image.open(f"Automatic Offside Recognition GUI/src/images/{team}.png")
+    # Display team result image
+    team_button_img = Image.open(f"GUI/src/images/{team}.png")
     team_button_photo = ImageTk.PhotoImage(team_button_img)
     canvas.team_button = team_button_photo
     canvas.team_button_img = team_button_img
     
     canvas.create_image(900, 530, image=team_button_photo)
 
-def schermata_di_caricamento(file_path, team):
+# Function to display the loading view while processing the image
+def loading_view(file_path, team, dictPlayers, colors):
     canvas.delete("all")
-    background = Image.open('Automatic Offside Recognition GUI/src/images/waiting.jpg')
+    background = Image.open('GUI/src/images/waiting.jpg')
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)
 
-    def handle_keypress(event):
-        global stop
-        stop = True
-        visualizza_immagine(file_path, team, 0)
+    root.after(10, result_view, file_path, team, dictPlayers, colors)
 
-    root.bind("<Key>", handle_keypress)
-
-
-
-def schermata_di_caricamento_gif(file_path, team):
-
-    gif_file_path = "Automatic Offside Recognition GUI\src\loading.gif"
-
-    background_image = Image.open("Automatic Offside Recognition GUI\src\images\start.jpg")
-    background_photo = ImageTk.PhotoImage(background_image)
-    label = tk.Label(root, image=background_photo)
-    label.pack()
-    
-    gif = gifplay(label, gif_file_path,0.1)
-    gif.play()
-
-
-def schermata_di_caricamento_loop(file_path, team):
-    global stop
-    stop = False
-
-    images = [
-        Image.open("Automatic Offside Recognition GUI\src\images\image1.jpg"),
-        Image.open("Automatic Offside Recognition GUI\src\images\image2.jpg"),
-        Image.open("Automatic Offside Recognition GUI\src\images\image3.jpg"),
-        Image.open("Automatic Offside Recognition GUI\src\images\image4.jpg")
-    ]
-    
-    # Funzione per mostrare le immagini a intervalli
-    def show_image(idx=0):
-        if not stop:  # Continua solo se lo stato di stop è False
-            canvas.delete("all")
-            image = images[idx].resize((1280, 720))
-            background = ImageTk.PhotoImage(image)
-            canvas.background = background
-            canvas.create_image(0, 0, anchor=tk.NW, image=background) 
-
-            idx = (idx + 1) % len(images)  # Passa all'immagine successiva
-            root.after(250, show_image, idx)  # Mostra l'immagine successiva dopo un breve ritardo
-
-    def handle_keypress(event):
-        global stop
-        stop = True
-        visualizza_immagine(file_path, team)
-
-    root.bind("<Key>", handle_keypress)
-    
-    show_image(0)
-
+# Function to display the start view
 def start_view():
+
     for widget in root.winfo_children():
         if isinstance(widget, tk.Label):
             if widget["text"].startswith("Team ") or widget["text"].startswith("Giocatori "):
                 widget.destroy()
 
-
-    background = Image.open('Automatic Offside Recognition GUI/src/images/start.jpg')
+    background = Image.open('GUI/src/images/start.jpg')
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)
 
-    start_button_image = Image.open('Automatic Offside Recognition GUI/src/elements/start_button.png')
+    # Create and configure start button
+    start_button_image = Image.open('GUI/src/elements/start_button.png')
     start_button_image_resized = start_button_image.resize((200, 50))
     start_button_photo = ImageTk.PhotoImage(start_button_image_resized)
     canvas.start_button = start_button_photo
@@ -202,42 +145,47 @@ def start_view():
     def on_leave(event):
         canvas.itemconfig(start_button, image=canvas.start_button)
 
-    canvas.tag_bind(start_button, '<Button-1>', lambda event: avvia_processo())
+    canvas.tag_bind(start_button, '<Button-1>', lambda event: select_image())
     canvas.tag_bind(start_button, '<Enter>', on_enter)
     canvas.tag_bind(start_button, '<Leave>', on_leave)
 
-def impostazioni_preprocessamento(file_path):
+# Function to display the preprocessing view
+def preprocess_view(file_path):
     global team
-    team = "A"  # Valore iniziale del team
+    team = "A"  # Initial team value
 
-    background = Image.open("Automatic Offside Recognition GUI/src/images/preprocess.jpg")
+    background = Image.open("GUI/src/images/preprocess.jpg")
     background = background.resize((1280, 720))
     background = ImageTk.PhotoImage(background)
     canvas.background = background
     canvas.create_image(0, 0, anchor=tk.NW, image=background)  
 
+    dictPlayers, colors, _  = team_classification(file_path)
+    img_path = 'result/teamClassification.png'
+
     imgX = 727
-    img = Image.open(file_path)
+    img = Image.open(img_path)
     img = img.resize((imgX, int((imgX/16) * 9)))
     img = ImageTk.PhotoImage(img)
     canvas.img = img
     canvas.create_image(640-(imgX//2), 62, anchor=tk.NW, image=img)
     
-    teamA_button_img = Image.open("Automatic Offside Recognition GUI/src/elements/teamA_button.png")
+    # Create and configure team selection and process buttons
+    teamA_button_img = Image.open("GUI/src/elements/teamA_button.png")
     teamA_button_img_resized = teamA_button_img.resize((160, 40))
     teamA_button_img_dark = reduce_brightness(teamA_button_img_resized, 0.5)
     teamA_button_photo = ImageTk.PhotoImage(teamA_button_img_dark)
     canvas.teamA_button_photo = teamA_button_photo
     canvas.teamA_button_img_resized = teamA_button_img_resized
     
-    teamB_button_img = Image.open("Automatic Offside Recognition GUI/src/elements/teamB_button.png")
+    teamB_button_img = Image.open("GUI/src/elements/teamB_button.png")
     teamB_button_img_resized = teamB_button_img.resize((160, 40))
     teamB_button_img_dark = reduce_brightness(teamB_button_img_resized, 0.5)
     teamB_button_photo = ImageTk.PhotoImage(teamB_button_img_dark)
     canvas.teamB_button_photo = teamB_button_photo
     canvas.teamB_button_img_resized = teamB_button_img_resized
     
-    process_button_img = Image.open("Automatic Offside Recognition GUI/src/elements/process_button.png")
+    process_button_img = Image.open("GUI/src/elements/process_button.png")
     process_button_img_resized = process_button_img.resize((200, 50))
     process_button_photo = ImageTk.PhotoImage(process_button_img_resized)
     canvas.process_button_photo = process_button_photo
@@ -250,7 +198,8 @@ def impostazioni_preprocessamento(file_path):
     teamB_button = canvas.create_image(640+button_space, button_height, image=teamB_button_photo)
     process_button = canvas.create_image(640, 630, image=process_button_photo)
 
-    def scegli_team(this_team):
+    # Function to handle team selection
+    def chose_team(this_team):
         global team
         team = this_team
         if team == "A":
@@ -277,29 +226,30 @@ def impostazioni_preprocessamento(file_path):
     def on_leave_process(event):
         canvas.itemconfig(process_button, image=canvas.process_button_photo)
 
-    canvas.tag_bind(teamA_button, '<Button-1>', lambda event: scegli_team("A"))
-    canvas.tag_bind(teamB_button, '<Button-1>', lambda event: scegli_team("B"))
-    canvas.tag_bind(process_button, '<Button-1>', lambda event: schermata_di_caricamento(file_path, team))
+    canvas.tag_bind(teamA_button, '<Button-1>', lambda event: chose_team("A"))
+    canvas.tag_bind(teamB_button, '<Button-1>', lambda event: chose_team("B"))
+    canvas.tag_bind(process_button, '<Button-1>', lambda event: loading_view(file_path, team, dictPlayers, colors))
     canvas.tag_bind(process_button, '<Enter>', on_enter_process)
     canvas.tag_bind(process_button, '<Leave>', on_leave_process)
 
-def avvia_processo():
-    seleziona_immagine()
-
+# Set up the main window
 root = tk.Tk()
 root.title("Automatic Offside Recognition")
 root.geometry("1280x720")
 root.resizable(False, False)
 
-icon_path = 'Automatic Offside Recognition GUI/src/icons/logo.ico'
+# Set window icon
+icon_path = 'GUI/src/icons/logo.ico'
 im = Image.open(icon_path)
 photo = ImageTk.PhotoImage(im)
 root.wm_iconphoto(True, photo)
 
-root.iconbitmap(icon_path)
-
+# Create and pack the canvas
 canvas = tk.Canvas(root, width=1280, height=720, highlightthickness=0)
 canvas.pack()
+
+# Start the application with the start view
 start_view()
 
+# Run the main event loop
 root.mainloop()
