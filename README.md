@@ -2,12 +2,9 @@
 Project for the course 'Ai Lab'
 
 # TODO
-- Risaltare giocatori che si intersecano con linea
 - Fare read.me completo
 - lista requirements
-- Gui per chiedere il lato se portiere non c'è
-- cAMBOIARE FONT SCRITTA GIOCATORE
-- sistemare cambio team con portiere
+
 ```
 
 ├── GUI
