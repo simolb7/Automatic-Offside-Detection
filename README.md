@@ -8,11 +8,8 @@ Project for the course 'Ai Lab'
 - Gui per chiedere il lato se portiere non c'è
 - cAMBOIARE FONT SCRITTA GIOCATORE
 - sistemare cambio team con portiere
-
-
-> Download Weights to insert into model/sportsfield_release/out -> [Weights](https://drive.google.com/drive/folders/1CXyRhw3WUcZj8UItCA0oA9utbg-V-V_2?usp=drive_link)
-
 ```
+
 ├── GUI
 │   └── src
 │       ├── elements
