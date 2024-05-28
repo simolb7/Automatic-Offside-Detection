@@ -58,9 +58,6 @@ def convertPoint2Dto3D(homography: torch.Tensor, p: list, w: int, h: int) -> lis
 
     return [x_warped, y_warped]
 
-def drawShadowPitch(image, pitch2D, homography:torch.Tensor) -> None:
-    None
-    
 
 def putPng(image, tag, position) -> None:
     if tag.shape[2] == 4:
@@ -104,12 +101,7 @@ def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homogr
     La funzione ritorna in output il numero di attaccanti in fuorigioco e salva nella cartella result le immagini lavorate.'''
     image = cv2.imread(pathImage)
     pitch2D = cv2.imread("model/sportsfield_release/data/world_cup_template.png")
-    #goalkeeper = [741, 549]
-    ''''
-    homography = torch.tensor([[[ 0.2940,  0.0238, -0.3597],
-            [-0.2042,  1.1472,  0.1179],
-            [ 0.0560,  0.9439,  1.0000]]])
-    '''
+
     offside_tag = cv2.imread('GUI/src/images/resizedTag.png',  cv2.IMREAD_UNCHANGED)
 
     '''Calcola altezza e larghezza della foto'''
@@ -193,14 +185,6 @@ def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homogr
         for i, p in enumerate(attacker2D):
             if p[0] > last_def[0]:
                 offside.append(p)
-                #CAMBIARE FONT
-            
-                #image[ attacker[i][1]-10:attacker[i][1]-10+h_tag, attacker[i][0]-30:attacker[i][0]-30+w_tag] = resizeTag
-                #cv2.rectangle(image, (attacker[i][0], attacker[i][1]), (attacker[i][2], attacker[i][3]), color=(0,255,255), thickness=2) 
-                #cv2.putText(image, "Offside", (attacker[i][0]-30, attacker[i][1]-10),cv2.FONT_HERSHEY_COMPLEX,1, (0,0,0),2)
-                #putPng(image, offside_tag, [attacker[i][0]-55, attacker[i][1]-50])
-                
-
                 mediax = round(((attacker[i][2]-attacker[i][0])/2)+attacker[i][0])
 
                 putPng(image, offside_tag, [mediax-65,attacker[i][1]-30])
@@ -225,15 +209,3 @@ def drawOffside(pathImage: str, team: str, colors: dict[str, np.ndarray], homogr
     os.chdir('..')
     
     return playerOffside
-
-'''
-D = [[1690, 1054, 1763, 1212], [1058, 649, 1118, 756], [1031, 958, 1090, 1110], [1501, 686, 1546, 807], [1323, 701, 1367, 833], [1453, 473, 1520, 584], [836, 759, 899, 900], [1145, 601, 1223, 694]]
-A = [[306, 960, 374, 1111], [1091, 1200, 1169, 1376], [1629, 716, 1689, 851], [1201, 599, 1266, 720], [1884, 1323, 1964, 1440], [2524, 592, 2560, 723], [812, 690, 878, 796]]
-GK = [[708, 466, 763, 560]]
-H = homography = torch.tensor([[[ 0.2940,  0.0238, -0.3597],
-            [-0.2042,  1.1472,  0.1179],
-            [ 0.0560,  0.9439,  1.0000]]])
-path = 'samples/363.jpg'
-
-drawOffside(path,'A', [[ 64,  85, 182],[190, 212, 223]], H, D, A, GK)
-'''
