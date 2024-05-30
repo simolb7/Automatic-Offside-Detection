@@ -25,10 +25,10 @@ The project is structured in three parts:
 │       ├── icons
 │       ├── images
 │       └── offside
-├── mainGUI.py
+├── mainGUI.py # main file 
 ├── model
 │   ├── sportsfield_release
-│   │   ├── calculateHomography.py
+│   │   ├── calculateHomography.py # file python in which homography is calculated
 │   │   ├── data
 │   │   ├── datasets
 │   │   │   ├── aligned_dataset.py
@@ -40,7 +40,7 @@ The project is structured in three parts:
 │   │   │   ├── init_guesser.py
 │   │   │   ├── __init__.py
 │   │   │   ├── loss_surface.py
-│   │   │   ├── __pycache__
+│   │   │ 
 │   │   │   └── resnet.py
 │   │   ├── options
 │   │   │   ├── fake_options.py
@@ -48,7 +48,7 @@ The project is structured in three parts:
 │   │   │   ├── options_check.py
 │   │   │   ├── options.py
 │   │   │   ├── options_utils.py
-│   │   │   └── __pycache__
+│   │   │   
 │   │   ├── out
 │   │   │   ├── pretrained_init_guess
 │   │   │   └── pretrained_loss_surface
@@ -59,7 +59,7 @@ The project is structured in three parts:
 │   │   │   ├── image_utils.py
 │   │   │   ├── __init__.py
 │   │   │   ├── metrics.py
-│   │   │   ├── __pycache__
+│   │   │  
 │   │   │   ├── util.py
 │   │   │   └── warp.py
 │   │   ├── video_out
@@ -70,10 +70,9 @@ The project is structured in three parts:
 │   └── teamClassification
 │       ├── frame
 │       ├── __pycache__
-│       ├── team_classification.py
+│       ├── team_classification.py # file python in which team classification is computed
 │       └── weights
 ├── offside.py
-├── __pycache__
 ├── result
 └── samples
 ```
