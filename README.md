@@ -26,13 +26,11 @@ git clone https://github.com/simolb7/Automatic-Offside-Detection.git
 The following packages are required to run the application
 ```sh
 # for homography
-imageio
 tqdm
 torch
 numpy
 os
 PIL
-matplotlib
 # for team classification
 ultralytics
 sklearn
