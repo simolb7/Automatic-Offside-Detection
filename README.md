@@ -41,8 +41,8 @@ math
 # for GUI
 tkinter
 ```
-# Python
-A 3.10 or later Python version is required
+
+> **DISCLAIMER**: A 3.10 or later Python version is required.
 
 ## How To Run
 1. Move to directory where you previously installed the repository
