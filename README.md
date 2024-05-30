@@ -17,8 +17,6 @@ The project is structured in three parts:
 - Team Classification
 - GUI
 
-### Codebase Structure
-
 ├── GUI
 │   └── src
 │       ├── elements
