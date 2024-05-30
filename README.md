@@ -29,7 +29,6 @@ The project is structured in three parts:
 ├── model 
 │   ├── sportsfield_release #model for camera pose estimation
 │   │   ├── calculateHomography.py # file python in which homography is calculated
-│   │   ├── data
 │   │   ├── datasets
 │   │   │   ├── aligned_dataset.py
 │   │   ├── models
@@ -39,26 +38,19 @@ The project is structured in three parts:
 │   │   │   ├── init_guesser.py
 │   │   │   ├── loss_surface.py
 │   │   │   └── resnet.py
-│   │   ├── options
-│   │   │   ├── fake_options.py
-│   │   │   ├── options_check.py
-│   │   │   ├── options.py
-│   │   │   ├── options_utils.py  
 │   │   ├── out # model homography
 │   │   │   ├── pretrained_init_guess
 │   │   │   └── pretrained_loss_surface
-│   │   ├── test_end2end.py
 │   │   ├── utils
 │   │   │   ├── constant_var.py
 │   │   │   ├── image_utils.py 
 │   │   │   ├── metrics.py
 │   │   │   ├── util.py
 │   │   │   └── warp.py
-│   │   ├── video_out
 │   │   └── world_cup_data_augmentation
 │   │       ├── h5_builder.py
 │   │       ├── raw_data_loader.py
-│   │       └── soccer_field_template
+│   │       └── soccer_field_template #templated used for 2D 
 │   └── teamClassification #model for player identificaiton
 │       ├── frame
 │       ├── team_classification.py # file python in which team classification is computed
