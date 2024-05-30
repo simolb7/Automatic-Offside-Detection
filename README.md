@@ -32,34 +32,26 @@ The project is structured in three parts:
 │   │   ├── data
 │   │   ├── datasets
 │   │   │   ├── aligned_dataset.py
-│   │   │   
 │   │   ├── models
 │   │   │   ├── base_model.py
 │   │   │   ├── end_2_end_optimization_helper.py
 │   │   │   ├── end_2_end_optimization.py
 │   │   │   ├── init_guesser.py
-│   │   │   
 │   │   │   ├── loss_surface.py
-│   │   │ 
 │   │   │   └── resnet.py
 │   │   ├── options
 │   │   │   ├── fake_options.py
-│   │   │   
 │   │   │   ├── options_check.py
 │   │   │   ├── options.py
-│   │   │   ├── options_utils.py
-│   │   │   
+│   │   │   ├── options_utils.py  
 │   │   ├── out # model homography
 │   │   │   ├── pretrained_init_guess
 │   │   │   └── pretrained_loss_surface
-│   │   
 │   │   ├── test_end2end.py
 │   │   ├── utils
 │   │   │   ├── constant_var.py
-│   │   │   ├── image_utils.py
-│   │   │   
+│   │   │   ├── image_utils.py 
 │   │   │   ├── metrics.py
-│   │   │  
 │   │   │   ├── util.py
 │   │   │   └── warp.py
 │   │   ├── video_out
@@ -69,7 +61,6 @@ The project is structured in three parts:
 │   │       └── soccer_field_template
 │   └── teamClassification #model for player identificaiton
 │       ├── frame
-│      
 │       ├── team_classification.py # file python in which team classification is computed
 │       └── weights
 ├── offside.py # file python where offside is detected
