@@ -49,8 +49,8 @@ tkinter
 ```
 
 ## How To Use
-If you want to use the gpu to speed up the execution, you have to edit in '''model/sportsfield_release/calculateHomography.py'''' the follow line: \
-In the function '''calculateOptimHomography''', set constant_var.USE_CUDA to True
+If you want to use the gpu to speed up the execution, you have to edit in `model/sportsfield_release/calculateHomography.py` the follow line: 
+- In the function `calculateOptimHomography`, set `constant_var.USE_CUDA` to True
 
 ## How to run
 1. Move to directory where you previously installed the repository
