@@ -23,6 +23,10 @@ git clone https://github.com/simolb7/Automatic-Offside-Detection.git
 ```
 
 ## Install dependencies
+
+
+> **DISCLAIMER**: A 3.10 or later Python version is required.
+
 The following packages are required to run the application
 ```sh
 # for homography
@@ -41,8 +45,6 @@ math
 # for GUI
 tkinter
 ```
-
-> **DISCLAIMER**: A 3.10 or later Python version is required.
 
 ## How To Run
 1. Move to directory where you previously installed the repository
