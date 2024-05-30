@@ -9,7 +9,7 @@ Authors:
 - Tommaso Bernardini https://github.com/bern4rd1n1
 - Simone La Bella https://github.com/simolb7
 - Mattia Di Marco https://github.com/SasakiKun22
-- Jacopo Spallotta
+- Jacopo Spallotta https://github.com/JacopoSpallotta
 
 
 The project is structured in three parts:
