@@ -72,7 +72,7 @@ The project is structured in three parts:
 │       ├── __pycache__
 │       ├── team_classification.py # file python in which team classification is computed
 │       └── weights
-├── offside.py
+├── offside.py # file python where offside is detected
 ├── result
 └── samples
 ```
