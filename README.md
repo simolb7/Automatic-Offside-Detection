@@ -54,7 +54,9 @@ python mainGUI.py
 ```
 3. The application makes a prediction on which team is attacking in the picture and marks this team as Team A but the user still can choose which team is attacking beetween Team A and Team B.
 4. Video demonstration
+   
 
+https://github.com/simolb7/Automatic-Offside-Detection/assets/149960121/0c9ccf2a-8788-42e4-be8c-88198bd99232
 
 
 
