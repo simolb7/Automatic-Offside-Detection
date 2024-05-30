@@ -26,38 +26,38 @@ The project is structured in three parts:
 │       ├── images
 │       └── offside
 ├── mainGUI.py # main file 
-├── model
+├── model 
 │   ├── sportsfield_release
 │   │   ├── calculateHomography.py # file python in which homography is calculated
 │   │   ├── data
 │   │   ├── datasets
 │   │   │   ├── aligned_dataset.py
-│   │   │   └── __init__.py
+│   │   │   
 │   │   ├── models
 │   │   │   ├── base_model.py
 │   │   │   ├── end_2_end_optimization_helper.py
 │   │   │   ├── end_2_end_optimization.py
 │   │   │   ├── init_guesser.py
-│   │   │   ├── __init__.py
+│   │   │   
 │   │   │   ├── loss_surface.py
 │   │   │ 
 │   │   │   └── resnet.py
 │   │   ├── options
 │   │   │   ├── fake_options.py
-│   │   │   ├── __init__.py
+│   │   │   
 │   │   │   ├── options_check.py
 │   │   │   ├── options.py
 │   │   │   ├── options_utils.py
 │   │   │   
-│   │   ├── out
+│   │   ├── out # model homography
 │   │   │   ├── pretrained_init_guess
 │   │   │   └── pretrained_loss_surface
-│   │   ├── __pycache__
+│   │   
 │   │   ├── test_end2end.py
 │   │   ├── utils
 │   │   │   ├── constant_var.py
 │   │   │   ├── image_utils.py
-│   │   │   ├── __init__.py
+│   │   │   
 │   │   │   ├── metrics.py
 │   │   │  
 │   │   │   ├── util.py
@@ -69,11 +69,11 @@ The project is structured in three parts:
 │   │       └── soccer_field_template
 │   └── teamClassification
 │       ├── frame
-│       ├── __pycache__
+│      
 │       ├── team_classification.py # file python in which team classification is computed
 │       └── weights
 ├── offside.py # file python where offside is detected
-├── result
+├── result # folder where results are stored
 └── samples
 ```
 
