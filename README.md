@@ -6,7 +6,7 @@ Project related to the exam AI lab: Computer Vision and NLP of the academic year
 \
 Authors:
 
-- Tommaso Bernardini
+- Tommaso Bernardini https://github.com/bern4rd1n1
 - Simone La Bella https://github.com/simolb7
 - Mattia Di Marco https://github.com/SasakiKun22
 - Jacopo Spallotta
