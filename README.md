@@ -2,7 +2,8 @@
 ## _AI Lab: Computer Vision and NLP_
 
 
-Project related to the exam AI lab: Computer Vision and NLP of the academic year 2023/2024. Authors:
+Project related to the exam AI lab: Computer Vision and NLP of the academic year 2023/2024. 
+Authors:
 
 - Tommaso Bernardini
 - Simone La Bella
