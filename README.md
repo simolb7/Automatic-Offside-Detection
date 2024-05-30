@@ -6,8 +6,8 @@ Project related to the exam AI lab: Computer Vision and NLP of the academic year
 \
 Authors:
 
-- Tommaso Bernardini
-- Simone La Bella
+- Tommaso Bernardini: 
+- Simone La Bella: Link GitHub https://github.com/simolb7
 - Mattia Di Marco
 - Jacopo Spallotta
 
