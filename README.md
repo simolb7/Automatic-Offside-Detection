@@ -17,6 +17,7 @@ The project is structured in three parts:
 - Team Classification
 - GUI
 
+```
 ├── GUI
 │   └── src
 │       ├── elements
@@ -75,7 +76,7 @@ The project is structured in three parts:
 ├── __pycache__
 ├── result
 └── samples
-
+```
 
 # Installation
 
