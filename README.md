@@ -18,7 +18,7 @@ The project is structured in three parts:
 - GUI
 
 ```
-├── GUI
+├── GUI #gui's elements
 │   └── src
 │       ├── elements
 │       ├── fonts
@@ -27,7 +27,7 @@ The project is structured in three parts:
 │       └── offside
 ├── mainGUI.py # main file 
 ├── model 
-│   ├── sportsfield_release
+│   ├── sportsfield_release #model for camera pose estimation
 │   │   ├── calculateHomography.py # file python in which homography is calculated
 │   │   ├── data
 │   │   ├── datasets
@@ -67,14 +67,14 @@ The project is structured in three parts:
 │   │       ├── h5_builder.py
 │   │       ├── raw_data_loader.py
 │   │       └── soccer_field_template
-│   └── teamClassification
+│   └── teamClassification #model for player identificaiton
 │       ├── frame
 │      
 │       ├── team_classification.py # file python in which team classification is computed
 │       └── weights
 ├── offside.py # file python where offside is detected
 ├── result # folder where results are stored
-└── samples
+└── samples #some sample frames
 ```
 
 # Installation
