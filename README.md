@@ -92,7 +92,7 @@ tkinter
 ```
 
 ## How To Use
-> **DISCLAIMER**: To make the application  work, must install out model to the link [here](https://drive.google.com/drive/folders/1CXyRhw3WUcZj8UItCA0oA9utbg-V-V_2?usp=drive_link)  and put it in directory `model/sportsfield_realease/`
+> **DISCLAIMER**: To make the application  work, must install out model to the link [here](https://drive.google.com/drive/folders/1gv8ySiXIhxHQd09ccoWaoUSi9ZomEDbF?usp=drive_link)  and put it in directory `model/sportsfield_realease/`
 \
 
 If you want to use the gpu to speed up the execution, you have to edit in `model/sportsfield_release/calculateHomography.py` the follow line: 
