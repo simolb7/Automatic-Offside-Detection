@@ -13,7 +13,7 @@ Authors:
 
 
 > If you want to use the gpu to speed up the execution, you have to edit in `model/sportsfield_release/calculateHomography.py` the follow line: 
-- In the function `calculateOptimHomography`, set `constant_var.USE_CUDA` to *True*.
+> - In the function `calculateOptimHomography`, set `constant_var.USE_CUDA` to *True*.
 
 The project is structured in three parts:
 - Homography
