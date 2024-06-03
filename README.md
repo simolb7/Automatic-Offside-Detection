@@ -82,7 +82,8 @@ tqdm
 torch
 numpy
 os
-PIL
+pillow
+imageio
 # for team classification
 ultralytics
 sklearn
