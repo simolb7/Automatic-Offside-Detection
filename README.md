@@ -12,6 +12,9 @@ Authors:
 - Jacopo Spallotta https://github.com/JacopoSpallotta
 
 
+If you want to use the gpu to speed up the execution, you have to edit in `model/sportsfield_release/calculateHomography.py` the follow line: 
+- In the function `calculateOptimHomography`, set `constant_var.USE_CUDA` to *True*.
+
 The project is structured in three parts:
 - Homography
 - Team Classification
@@ -94,9 +97,6 @@ tkinter
 ## How To Use
 > **DISCLAIMER**: To make the application  work, must install out model to the link [here](https://drive.google.com/drive/folders/1gv8ySiXIhxHQd09ccoWaoUSi9ZomEDbF?usp=drive_link)  and put it in directory `model/sportsfield_realease/`
 
-
-If you want to use the gpu to speed up the execution, you have to edit in `model/sportsfield_release/calculateHomography.py` the follow line: 
-- In the function `calculateOptimHomography`, set `constant_var.USE_CUDA` to *True*.
 
 ## How to run
 1. Move to directory where you previously installed the repository
